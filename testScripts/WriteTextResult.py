@@ -8,7 +8,7 @@ def writeTextResult(sheetObj,rowNo,colsNo,testResult,CaseInfo = None,picPath = N
     # 控制执行结果颜色控制字典
     colorDict = {"成功":"green",
                  "失败":"red",
-                 "跳过":"yellow",
+                 "跳过":"green",
                  "":None}
 
     # 以下字典用于区分写入sheet类型

@@ -73,7 +73,8 @@ def mixDriverRun():
                     if nextToRun != "是":
                         isLastModule = True
                     # 启用数据驱动框架
-                    result = DataFrameWork.dataDriverRun(dataSheetObj,stepSheetObj,stepSheetName,isLastModule)
+                    result = DataFrameWork.dataDriverRun(dataSheetObj,stepSheetObj,
+                                                         stepSheetName,isLastModule,funcName)
 
                     if result == "模块执行成功":
                         logging.info(u"功能 '%s' 执行成功" %funcName)

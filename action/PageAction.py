@@ -27,6 +27,27 @@ driver = None
 # 全局的等待类实例对象
 waitUtil = None
 
+
+'''
+【关键字分类】
+1、浏览器操作:open_browser、visit_url、close_browser、close_page、switch_to_frame、switch_to_default_content、
+            maximize_browser、switch_to_now_window、refresh_page、scroll_slide_field；
+2、常规操作：clear、specObjClear、click_Obj、click_SpecObj、sendkeys_To_Obj、sendkeys_To_SpecObj、
+            SelectValues（setValueByTextAside、selectValueByTextAside）；
+3、辅助定位：highlightElement、highlightElements、whichIsEnabled、whichIsDisplayed；
+4、获取信息：getTitle、getPageSource、assert_string_in_pagesourse、asser_title、getAttribute；
+5、剪贴板操作：paste_string、press_key；
+6、等待：loadPage、sleep、waitPresenceOfElementLocated、waitVisibilityOfElementLocated、
+        waitFrameToBeAvailableAndSwitchToIt；
+7、鼠标键盘模拟：moveToElement、init_Mouse、pageKeySimulate；
+8、外部程序调用：runProcessFile（uploadFile_x1、uploadFile_x2）；
+9、字符串操作：randomNum、pinyinTransform；
+10、带判断关键字：ifExistThenClick、ifExistThenSendkeys、ifExistThenSelect、BoxHandler；
+11、JS相关：setDataByJS；
+12、项目关键字：（writeContracNum）
+'''
+# ****************************************浏览器操作****************************************
+
 def open_browser(browserName,*arg):        #打开浏览器
     global driver,waitUtil
     try:
@@ -64,11 +85,64 @@ def close_browser(*arg):        #关闭浏览器
     except Exception as e:
         raise e
 
-def sleep(sleepSeconds,*arg):       #强制等待
+
+def switch_to_frame(locationType,frameLocatorExpression,*arg):      #切换进入frame
+    global driver
     try:
-        time.sleep(int(sleepSeconds))
+        driver.switch_to.frame(findEleByDetail(driver,locationType,frameLocatorExpression))
+    except Exception as e:
+        print('未找到指定frame')
+        raise e
+
+def switch_to_default_content(*arg):        #切出frame，回到默认对话框中
+    global driver
+    try:
+        return driver.switch_to.default_content()
     except Exception as e:
         raise e
+
+def maximize_browser():     #窗口最大化
+    global driver
+    try:
+        driver.maximize_window()
+    except Exception as e:
+        raise e
+
+def switch_to_now_window(handlesNum,*arg):      #切换进入frame
+    global driver
+    try:
+        handlesNum = int(handlesNum)
+        all_handles = driver.window_handles
+        driver.switch_to.window(all_handles[handlesNum])
+        print(all_handles)
+    except Exception as e:
+        print('未找到指定句柄')
+        raise e
+
+def close_page(*arg):  # 关闭标签页
+    global driver
+    try:
+        driver.close()
+    except Exception as e:
+        raise e
+
+def refresh_page(*arg):        #刷新网页
+    global driver
+    try:
+        driver.refresh()
+    except Exception as e:
+        raise e
+
+# 滚动条上下移动，拖动到可见的元素去
+def scroll_slide_field(locationType, locatorExpression, *arg):
+    global driver
+    try:
+        element = findElebyMethod(driver, locationType, locatorExpression)
+        driver.execute_script("arguments[0].scrollIntoView();", element)  # 拖动到可见的元素去
+    except Exception as e:
+        raise e
+
+# ****************************************常规操作****************************************
 
 def clear(locationType,locatorExpression,*arg):     #清除输入框默认内容
     global driver
@@ -92,151 +166,6 @@ def click_Obj(locationType, locatorExpression, *arg):       #点击页面元素
         findEleByDetail(driver, locationType, locatorExpression).click()
     except Exception as e:
         raise e
-
-def assert_string_in_pagesourse(assertstring,*arg):     #断言当前页面是否存在指定字段
-    global driver
-    try:
-        driver.implicitly_wait(10)
-        assert assertstring in driver.page_source, \
-            u"在当前页面未找到字段：%s" %assertstring
-        # startTime = time.time()
-        # for i in range(20):
-        #     myTime = time.time() - startTime
-        #     if assert assertstring in driver.page_source:
-        #         break
-        #     if myTime <= 10:
-        #         sleep(0.5)
-
-    except AssertionError as e:
-        raise AssertionError(e)
-    except Exception as e:
-        raise e
-
-def asser_title(titleStr,*arg):     #断言判断当前页面标题是否存在指定字段
-    global driver
-    try:
-        assert titleStr in driver.title, \
-            u"当前不存在标题为 %s 的页面" % titleStr
-    except AssertionError as e:
-        raise AssertionError(e)
-    except Exception as e:
-        raise e
-
-def getTitle(*arg):     #获取页面标题
-    global driver
-    try:
-        return driver.title
-    except Exception as e:
-        raise e
-
-def getPageSource(*arg):        #获取页面源码
-    global driver
-    try:
-        return driver.page_source
-    except Exception as e:
-        raise e
-
-def switch_to_frame(locationType,frameLocatorExpression,*arg):      #切换进入frame
-    global driver
-    try:
-        driver.switch_to.frame(findEleByDetail(driver,locationType,frameLocatorExpression))
-    except Exception as e:
-        print('未找到指定frame')
-        raise e
-
-def switch_to_default_content(*arg):        #切出frame，回到默认对话框中
-    global driver
-    try:
-        return driver.switch_to.default_content()
-    except Exception as e:
-        raise e
-
-def paste_string(pasteString,*arg):     #模拟 ctrl+v
-    try:
-        Clipboard.setText(pasteString)
-        time.sleep(2)
-        KeyboardKeys.twoKeys("ctrl","v")
-    except Exception as e:
-        raise e
-
-def press_key(mykey,*arg):        #模拟单按键，如： "tab"、"enter"
-    try:
-        KeyboardKeys.oneKey(mykey)
-    except Exception as e:
-        raise e
-
-def maximize_browser():     #窗口最大化
-    global driver
-    try:
-        driver.maximize_window()
-    except Exception as e:
-        raise e
-
-def capture_screen(*arg):       #截图
-    global driver
-    # 获取当前时间，精确到秒
-    currentTime = getCurrentTime()
-    # 拼接一场图片保存的绝对路径及名称
-    picNameAndPath = str(createCurrentDateDir()) + "\\" + str(currentTime) + ".png"
-    try:
-        # 截屏，并保存为本地图片
-        driver.get_screenshot_as_file(picNameAndPath.replace('\\',r'\\'))
-        # print("picNameAndPath 为：",picNameAndPath.replace('\\',r'\\'))
-    except Exception as e:
-        raise e
-    else:
-        return picNameAndPath
-
-def waitPresenceOfElementLocated(locationType,locatorExpression,*arg):
-    '''
-    显示等待页面元素出现在DOM中，但不一定可见，存在则返回页面元素对象
-    :param locationType: 定位方法
-    :param locatorExpression: 定位表达式
-    :param arg:
-    :return: 页面元素对象
-    '''
-    global waitUtil
-    try:
-        waitUtil.presenceOfElementLocated(locationType,locatorExpression)
-    except Exception as e:
-        raise e
-
-def waitVisibilityOfElementLocated(locationType,locatorExpression,*arg):
-    '''
-    显式等待页面元素出现在DOM中，并且可见，存在则返回该页面元素对象
-    :param locationType: 定位方法
-    :param locationExpression: 定位表达式
-    :param args:
-    :return: None
-    '''
-    global waitUtil
-    try:
-        waitUtil.visibilityOfElementLocated(locationType,locatorExpression)
-    except Exception as e:
-        raise e
-
-def waitFrameToBeAvailableAndSwitchToIt(locationType,locatorExpression,*arg):
-    '''
-    检查frame是否存在，存在则切换到frame控件中
-    :param locationType: 定位方法
-    :param LocationExpression: 定位表达式
-    :param args:
-    :return: None
-    '''
-    global waitUtil
-    try:
-        waitUtil.frameToBeAvailableAndSwitchToIt(locationType,locatorExpression)
-    except Exception as e:
-        raise e
-
-def moveToElement(locationType,locatorExpression,*arg):        #鼠标移动到指定元素
-    global driver
-    try:
-        element = findEleByDetail(driver, locationType, locatorExpression)
-        MoveToEle(driver,element)
-    except Exception as e:
-        raise e
-
 
 # 针对partial_link_text、link_text、css_selector报错Unsupported locator strategy封装单独关键字
 
@@ -263,22 +192,53 @@ def click_SpecObj(locationType, locatorExpression, *arg):       #点击页面元
     except Exception as e:
         raise e
 
-def moveToElement(locationType,locatorExpression,*arg):        #鼠标移动到指定元素
+def SelectValues(locationType,locatorExpression,inputContent):      #输入框输值
     global driver
     try:
-        from selenium.webdriver.common.action_chains import ActionChains
-        element = findElebyMethod(driver, locationType, locatorExpression)
-        ActionChains(driver).move_to_element(element).perform()
-        # print(element.get_attribute("LINK_TEXT"))
-        # MoveToEle(driver,element)
+        el = Select(findEleByDetail(driver,locationType,locatorExpression))
+        el.select_by_visible_text(inputContent)
     except Exception as e:
         raise e
 
-def init_Mouse(*arg):       # 初始化鼠标位置
+def setValueByTextAside(textAside,inputContent,*arg):       # 根据输入框旁边的字段定位并向输入框输值,待整理参数，TODO
+    global driver
     try:
-        moveMouse(100,10)
+        # textAside = myInfo.split("|")[0]
+        # inputContent = myInfo.split("|")[1]
+        element = findEleByDetail(driver, "xpath", "//strong[.="+textAside+"]/following-sibling::input")
+        element.clear()
+        element.send_keys(inputContent)
     except Exception as e:
         raise e
+
+def selectValueByTextAside(myInfo,*arg):       # 根据输入框旁边的字段定位并向下拉框输值,待整理参数，TODO
+    global driver
+    try:
+        textAside = myInfo.split("|")[0]
+        inputContent = myInfo.split("|")[1]
+        element = Select(findEleByDetail(driver, "xpath", "//strong[.="+textAside+"]/following-sibling::select"))
+        element.select_by_visible_text(inputContent)
+    except Exception as e:
+        raise e
+
+def capture_screen(*arg):       #截图
+    global driver
+    # 获取当前时间，精确到秒
+    currentTime = getCurrentTime()
+    # 拼接一场图片保存的绝对路径及名称
+    picNameAndPath = str(createCurrentDateDir()) + "\\" + str(currentTime) + ".png"
+    try:
+        # 截屏，并保存为本地图片
+        driver.get_screenshot_as_file(picNameAndPath.replace('\\',r'\\'))
+        # print("picNameAndPath 为：",picNameAndPath.replace('\\',r'\\'))
+    except Exception as e:
+        raise e
+    else:
+        return picNameAndPath
+
+
+
+# ****************************************辅助定位****************************************
 
 def highlightElement(locationType,locatorExpression,*arg):     # 高亮元素
     global driver
@@ -325,6 +285,85 @@ def whichIsDisplayed(locationType,locatorExpression,*arg):    # 判断元素列�
     except Exception as e:
         raise e
 
+# ****************************************获取信息****************************************
+
+def getTitle(*arg):     #获取页面标题
+    global driver
+    try:
+        return driver.title
+    except Exception as e:
+        raise e
+
+def getPageSource(*arg):        #获取页面源码
+    global driver
+    try:
+        return driver.page_source
+    except Exception as e:
+        raise e
+
+def getAttribute(locationType,locatorExpression,attributeType,*arg):        # 获取页面元素属性值
+    global driver
+    try:
+        element = findElebyMethod(driver, locationType, locatorExpression)
+        attributeValue = element.get_attribute(attributeType)
+        if attributeValue is None:
+            if attributeType == "text":
+                attributeValue = element.text
+        return attributeValue
+    except Exception as e:
+        raise e
+
+# ****************************************断言及判断****************************************
+
+def assert_string_in_pagesourse(assertstring,*arg):     #断言当前页面是否存在指定字段
+    global driver
+    try:
+        driver.implicitly_wait(10)
+        assert assertstring in driver.page_source, \
+            u"在当前页面未找到字段：%s" %assertstring
+        # startTime = time.time()
+        # for i in range(20):
+        #     myTime = time.time() - startTime
+        #     if assert assertstring in driver.page_source:
+        #         break
+        #     if myTime <= 10:
+        #         sleep(0.5)
+
+    except AssertionError as e:
+        raise AssertionError(e)
+    except Exception as e:
+        raise e
+
+def asser_title(titleStr,*arg):     #断言判断当前页面标题是否存在指定字段
+    global driver
+    try:
+        assert titleStr in driver.title, \
+            u"当前不存在标题为 %s 的页面" % titleStr
+    except AssertionError as e:
+        raise AssertionError(e)
+    except Exception as e:
+        raise e
+
+
+# ****************************************剪贴板操作****************************************
+
+def paste_string(pasteString,*arg):     #模拟 ctrl+v
+    try:
+        Clipboard.setText(pasteString)
+        time.sleep(2)
+        KeyboardKeys.twoKeys("ctrl","v")
+    except Exception as e:
+        raise e
+
+def press_key(mykey,*arg):        #模拟单按键，如： "tab"、"enter"
+    try:
+        KeyboardKeys.oneKey(mykey)
+    except Exception as e:
+        raise e
+
+
+# ****************************************等待****************************************
+
 def loadPage(*arg):     # 设置页面加载时间
     global driver
     try:
@@ -334,6 +373,74 @@ def loadPage(*arg):     # 设置页面加载时间
     except TimeoutError as e:
         print("********** 等待页面加载超时 **********")
         raise TimeoutError(e)
+
+def sleep(sleepSeconds,*arg):       #强制等待
+    try:
+        time.sleep(int(sleepSeconds))
+    except Exception as e:
+        raise e
+
+def waitPresenceOfElementLocated(locationType,locatorExpression,*arg):
+    '''
+    显示等待页面元素出现在DOM中，但不一定可见，存在则返回页面元素对象
+    :param locationType: 定位方法
+    :param locatorExpression: 定位表达式
+    :param arg:
+    :return: 页面元素对象
+    '''
+    global waitUtil
+    try:
+        waitUtil.presenceOfElementLocated(locationType,locatorExpression)
+    except Exception as e:
+        raise e
+
+def waitVisibilityOfElementLocated(locationType,locatorExpression,*arg):
+    '''
+    显式等待页面元素出现在DOM中，并且可见，存在则返回该页面元素对象
+    :param locationType: 定位方法
+    :param locationExpression: 定位表达式
+    :param args:
+    :return: None
+    '''
+    global waitUtil
+    try:
+        waitUtil.visibilityOfElementLocated(locationType,locatorExpression)
+    except Exception as e:
+        raise e
+
+def waitFrameToBeAvailableAndSwitchToIt(locationType,locatorExpression,*arg):
+    '''
+    检查frame是否存在，存在则切换到frame控件中
+    :param locationType: 定位方法
+    :param LocationExpression: 定位表达式
+    :param args:
+    :return: None
+    '''
+    global waitUtil
+    try:
+        waitUtil.frameToBeAvailableAndSwitchToIt(locationType,locatorExpression)
+    except Exception as e:
+        raise e
+
+
+# ****************************************鼠标键盘模拟****************************************
+
+def moveToElement(locationType,locatorExpression,*arg):        #鼠标移动到指定元素
+    global driver
+    try:
+        from selenium.webdriver.common.action_chains import ActionChains
+        element = findElebyMethod(driver, locationType, locatorExpression)
+        ActionChains(driver).move_to_element(element).perform()
+        # print(element.get_attribute("LINK_TEXT"))
+        # MoveToEle(driver,element)
+    except Exception as e:
+        raise e
+
+def init_Mouse(*arg):       # 初始化鼠标位置
+    try:
+        moveMouse(100,10)
+    except Exception as e:
+        raise e
 
 def pageKeySimulate(locationType,locatorExpression,keyType,*arg):      # 模拟键盘
     global driver
@@ -347,6 +454,8 @@ def pageKeySimulate(locationType,locatorExpression,keyType,*arg):      # 模拟�
             element.send_keys(Keys.END)
     except Exception as e:
         raise e
+
+# ****************************************外部程序调用****************************************
 
 def uploadFile_x1(fileName,*arg):      # 上传文件，文件路径为testData路径（使用失败），TODO
     global driver
@@ -388,6 +497,8 @@ def runProcessFile(fileName,*arg):    # autoit上传文件
     except Exception as e:
         raise e
 
+# ****************************************字符串操作****************************************
+
 def randomNum(len,*arg):        # 生成指定长度的随机数（长度>=6）
     try:
         import random,datetime
@@ -402,52 +513,16 @@ def randomNum(len,*arg):        # 生成指定长度的随机数（长度>=6）
     except Exception as e:
         raise e
 
-def writeContracNum(myInfo,*arg):
-    # 该方法加断点时可往excel中写值成功，不加断点则写不进去，randomContracNum 方法暂时启用，TODO
+def pinyinTransform(myStr,*arg):        # 将汉字转换成拼音
     try:
-        # ParseExcel().randomContracNum(myInfo)
-        randContractNum = myInfo + randomNum(9)
-        return randContractNum
+        import pypinyin
+        from pypinyin import pinyin, lazy_pinyin
+        strTransformed = ''.join(lazy_pinyin(myStr))
+        return strTransformed
     except Exception as e:
         raise e
 
-def getAttribute(locationType,locatorExpression,attributeType,*arg):        # 获取页面元素属性值
-    global driver
-    try:
-        element = findElebyMethod(driver, locationType, locatorExpression)
-        attributeValue = element.get_attribute(attributeType)
-        return attributeValue
-    except Exception as e:
-        raise e
-
-def SelectValues(locationType,locatorExpression,inputContent):      #输入框输值
-    global driver
-    try:
-        el = Select(findEleByDetail(driver,locationType,locatorExpression))
-        el.select_by_visible_text(inputContent)
-    except Exception as e:
-        raise e
-
-def setValueByTextAside(textAside,inputContent,*arg):       # 根据输入框旁边的字段定位并向输入框输值,待整理参数，TODO
-    global driver
-    try:
-        # textAside = myInfo.split("|")[0]
-        # inputContent = myInfo.split("|")[1]
-        element = findEleByDetail(driver, "xpath", "//strong[.="+textAside+"]/following-sibling::input")
-        element.clear()
-        element.send_keys(inputContent)
-    except Exception as e:
-        raise e
-
-def selectValueByTextAside(myInfo,*arg):       # 根据输入框旁边的字段定位并向下拉框输值,待整理参数，TODO
-    global driver
-    try:
-        textAside = myInfo.split("|")[0]
-        inputContent = myInfo.split("|")[1]
-        element = Select(findEleByDetail(driver, "xpath", "//strong[.="+textAside+"]/following-sibling::select"))
-        element.select_by_visible_text(inputContent)
-    except Exception as e:
-        raise e
+# ****************************************带判断关键字****************************************
 
 def ifExistThenClick(locationType,locatorExpression,*arg):     # 若元素存在，则点击
     try:
@@ -466,6 +541,26 @@ def ifExistThenSendkeys(locationType,locatorExpression,inputContent):     # 若�
     except Exception as e:
         pass
 
+def BoxHandler(locationType,locatorExpression,textInBox):       # 若存在弹出框，则处理点击
+    try:
+        sleep(1)
+        assert_string_in_pagesourse(textInBox)
+        click_Obj(locationType,locatorExpression)
+    except Exception as e:
+        pass
+
+def ifExistThenSelect(locationType,locatorExpression,inputContent):     # 若元素存在，则选择选项
+    global driver
+    try:
+        element = WebDriverWait(driver, 5).until(lambda x: x.find_element(by = locationType, value = locatorExpression))
+        el = Select(element)
+        el.select_by_visible_text(inputContent)
+
+    except Exception as e:
+        pass
+
+# ****************************************JS相关****************************************
+
 def setDataByJS(locationType,locatorExpression,inputContent):       # 通过js修改日期空间的“readonly属性”
     try:
         element = findEleByDetail(driver,locationType,locatorExpression)
@@ -474,10 +569,14 @@ def setDataByJS(locationType,locatorExpression,inputContent):       # 通过js�
     except Exception as e:
         pass
 
-def BoxHandler(locationType,locatorExpression,textInBox):       # 若存在弹出框，则处理点击
+
+# ****************************************项目关键字****************************************
+
+def writeContracNum(myInfo,*arg):
+    # 该方法加断点时可往excel中写值成功，不加断点则写不进去，randomContracNum 方法暂时启用，TODO
     try:
-        sleep(1)
-        assert_string_in_pagesourse(textInBox)
-        click_Obj(locationType,locatorExpression)
+        # ParseExcel().randomContracNum(myInfo)
+        randContractNum = myInfo + randomNum(9)
+        return randContractNum
     except Exception as e:
-        pass
+        raise e

@@ -10,4 +10,4 @@ if __name__ == "__main__":
     for i in range(1,looptime+1):
         print("********** 第",i,"次执行 **********")
         mixDriverRun()
-        # close_browser()
+        close_browser()

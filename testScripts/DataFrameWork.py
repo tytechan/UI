@@ -5,7 +5,7 @@ from . import *
 from testScripts.WriteTextResult import *
 from util.Log import *
 
-def  dataDriverRun(dataSourceSheetObj,stepSheetObj,stepSheetName,isLastModule):
+def  dataDriverRun(dataSourceSheetObj,stepSheetObj,stepSheetName,isLastModule,funcName):
     '''
     :param dataSourceSheetObj: 数据模块sheet对象
     :param stepSheetObj: 功能&步骤模块sheet对象
@@ -46,11 +46,11 @@ def  dataDriverRun(dataSourceSheetObj,stepSheetObj,stepSheetName,isLastModule):
                 myColumnNum = 1
                 for myBox in excelObj.getRow(dataSourceSheetObj,1):
                     # 获取数据sheet中与功能sheet同名的列，并判断（Looptime + 2，myColumnNum）的值是否为“跳过”
-                    if myBox.value == stepSheetName:
+                    if myBox.value == funcName:
                         jumpValue = excelObj.getCellOfValue(dataSourceSheetObj,rowNo=Looptime+2,colsNo=myColumnNum)
                         print("********** 第",Looptime+2,"行",myColumnNum,"列的判断跳出标志位为：",
                               jumpValue," **********")
-                        if jumpValue == "执行":
+                        if jumpValue == stepSheetName:
                             pass
                         else:
                             jumpToBreak = True
@@ -184,7 +184,7 @@ def  dataDriverRun(dataSourceSheetObj,stepSheetObj,stepSheetName,isLastModule):
                                         colsNo = "DataSource",testResult = "成功",
                                         dataUse = "已使用")
                     successDataNo += 1
-                    # 若该行数据执行成功，则不再执行下一行数据
+                    # 若该行数据执行成功，则不再执行下一行数据，待确定可否控制是否循环执行所有，TODO！！！
                     break
                 else:
                     # 写入失败信息
@@ -205,7 +205,6 @@ def  dataDriverRun(dataSourceSheetObj,stepSheetObj,stepSheetName,isLastModule):
             '''
             成功执行数=待执行数 时，表示执行成功或跳出模块
             '''
-            myRow = Looptime + 2
             if jumpToBreak:
                 return "该模块不执行"
             else:
