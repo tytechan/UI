@@ -119,21 +119,21 @@ def switch_to_now_window(handlesNum,*arg):      #切换进入frame
         print('未找到指定句柄')
         raise e
 
-def close_page(*arg):  # 关闭标签页
+def close_page(*arg):  # 关闭标签页，20180517
     global driver
     try:
         driver.close()
     except Exception as e:
         raise e
 
-def refresh_page(*arg):        #刷新网页
+def refresh_page(*arg):        #刷新网页，20180517
     global driver
     try:
         driver.refresh()
     except Exception as e:
         raise e
 
-# 滚动条上下移动，拖动到可见的元素去
+# 滚动条上下移动，拖动到可见的元素去，20180517
 def scroll_slide_field(locationType, locatorExpression, *arg):
     global driver
     try:
@@ -549,7 +549,7 @@ def BoxHandler(locationType,locatorExpression,textInBox):       # 若存在弹�
     except Exception as e:
         pass
 
-def ifExistThenSelect(locationType,locatorExpression,inputContent):     # 若元素存在，则选择选项
+def ifExistThenSelect(locationType,locatorExpression,inputContent):     # 若元素存在，则选择选项，20180517
     global driver
     try:
         element = WebDriverWait(driver, 5).until(lambda x: x.find_element(by = locationType, value = locatorExpression))
