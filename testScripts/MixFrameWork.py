@@ -99,6 +99,8 @@ def mixDriverRun():
 
                         logging.info(u"程序异常,请检查代码是否编写正确: \n%s" %result)
 
+                        break
+
                 elif useFrameWorkName == u"关键字":
                     logging.info(u">> 调用关键字驱动...")
 

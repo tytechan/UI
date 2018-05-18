@@ -35,16 +35,17 @@ waitUtil = None
 2、常规操作：clear、specObjClear、click_Obj、click_SpecObj、sendkeys_To_Obj、sendkeys_To_SpecObj、
             SelectValues（setValueByTextAside、selectValueByTextAside）；
 3、辅助定位：highlightElement、highlightElements、whichIsEnabled、whichIsDisplayed；
-4、获取信息：getTitle、getPageSource、assert_string_in_pagesourse、asser_title、getAttribute；
-5、剪贴板操作：paste_string、press_key；
-6、等待：loadPage、sleep、waitPresenceOfElementLocated、waitVisibilityOfElementLocated、
+4、获取信息：getTitle、getPageSource、getAttribute、getDate_Now；
+5、断言及判断：assert_string_in_pagesourse、assert_title；
+6、剪贴板操作：paste_string、press_key；
+7、等待：loadPage、sleep、waitPresenceOfElementLocated、waitVisibilityOfElementLocated、
         waitFrameToBeAvailableAndSwitchToIt；
-7、鼠标键盘模拟：moveToElement、init_Mouse、pageKeySimulate；
-8、外部程序调用：runProcessFile（uploadFile_x1、uploadFile_x2）；
-9、字符串操作：randomNum、pinyinTransform；
-10、带判断关键字：ifExistThenClick、ifExistThenSendkeys、ifExistThenSelect、BoxHandler；
-11、JS相关：setDataByJS；
-12、项目关键字：（writeContracNum）
+8、鼠标键盘模拟：moveToElement、init_Mouse、pageKeySimulate；
+9、外部程序调用：runProcessFile（uploadFile_x1、uploadFile_x2）；
+10、字符串操作：randomNum、pinyinTransform；
+11、带判断关键字：ifExistThenClick、ifExistThenSendkeys、ifExistThenSelect、BoxHandler；
+12、JS相关：setDataByJS；
+13、项目关键字：finalBoxClick（writeContracNum）
 '''
 # ****************************************浏览器操作****************************************
 
@@ -119,21 +120,21 @@ def switch_to_now_window(handlesNum,*arg):      #切换进入frame
         print('未找到指定句柄')
         raise e
 
-def close_page(*arg):  # 关闭标签页，20180517
+def close_page(*arg):  # 关闭标签页
     global driver
     try:
         driver.close()
     except Exception as e:
         raise e
 
-def refresh_page(*arg):        #刷新网页，20180517
+def refresh_page(*arg):        #刷新网页
     global driver
     try:
         driver.refresh()
     except Exception as e:
         raise e
 
-# 滚动条上下移动，拖动到可见的元素去，20180517
+# 滚动条上下移动，拖动到可见的元素去
 def scroll_slide_field(locationType, locatorExpression, *arg):
     global driver
     try:
@@ -313,6 +314,16 @@ def getAttribute(locationType,locatorExpression,attributeType,*arg):        # �
     except Exception as e:
         raise e
 
+
+def getDate_Now(MyStr,*arg):        # 获取指定连接符的当前日期，20180517
+    try:
+        import datetime
+        MyDate = datetime.datetime.now().strftime("%Y"+MyStr+"%m"+MyStr+"%d")
+        print('********** 返回日期为：',MyDate,' **********')
+        return MyDate
+    except Exception as e:
+        raise e
+
 # ****************************************断言及判断****************************************
 
 def assert_string_in_pagesourse(assertstring,*arg):     #断言当前页面是否存在指定字段
@@ -334,7 +345,7 @@ def assert_string_in_pagesourse(assertstring,*arg):     #断言当前页面是�
     except Exception as e:
         raise e
 
-def asser_title(titleStr,*arg):     #断言判断当前页面标题是否存在指定字段
+def assert_title(titleStr,*arg):     #断言判断当前页面标题是否存在指定字段
     global driver
     try:
         assert titleStr in driver.title, \
@@ -343,7 +354,6 @@ def asser_title(titleStr,*arg):     #断言判断当前页面标题是否存在�
         raise AssertionError(e)
     except Exception as e:
         raise e
-
 
 # ****************************************剪贴板操作****************************************
 
@@ -549,7 +559,7 @@ def BoxHandler(locationType,locatorExpression,textInBox):       # 若存在弹�
     except Exception as e:
         pass
 
-def ifExistThenSelect(locationType,locatorExpression,inputContent):     # 若元素存在，则选择选项，20180517
+def ifExistThenSelect(locationType,locatorExpression,inputContent):     # 若元素存在，则选择选项
     global driver
     try:
         element = WebDriverWait(driver, 5).until(lambda x: x.find_element(by = locationType, value = locatorExpression))
@@ -580,3 +590,18 @@ def writeContracNum(myInfo,*arg):
         return randContractNum
     except Exception as e:
         raise e
+
+def finalBoxClick(*arg):        # 处理合同审批后，弹出窗口点击操作（双判断效率较低）,20180517
+    global driver
+    try:
+        # element = WebDriverWait(driver, 1).until(lambda x: x.find_element(by = "xpath",
+        #                                                                   value = "//button[.=\"返回销售合同待办\"]"))
+        element = driver.find_element_by_xpath("//button[.=\"返回销售合同待办\"]")
+        element.click()
+    except Exception as e:
+        # element = WebDriverWait(driver, 1).until(lambda x: x.find_element(by = "xpath",
+        #                                                                   value = "//button[.=\"返回我的单据\"]"))
+        element = driver.find_element_by_xpath("//button[.=\"返回我的单据\"]")
+        element.click()
+
+
