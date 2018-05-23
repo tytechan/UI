@@ -45,7 +45,7 @@ waitUtil = None
 10、字符串操作：randomNum、pinyinTransform；
 11、带判断关键字：ifExistThenClick、ifExistThenSendkeys、ifExistThenSelect、BoxHandler；
 12、JS相关：setDataByJS；
-13、项目关键字：finalBoxClick（writeContracNum）
+13、项目关键字：销售合同新增+审批：finalBoxClick、ifDoubleMsg（writeContracNum）
 '''
 # ****************************************浏览器操作****************************************
 
@@ -536,16 +536,18 @@ def pinyinTransform(myStr,*arg):        # 将汉字转换成拼音
 
 def ifExistThenClick(locationType,locatorExpression,*arg):     # 若元素存在，则点击
     try:
+        loadPage()
         # element = findEleByDetail(driver,locationType,locatorExpression)
-        element = WebDriverWait(driver, 5).until(lambda x: x.find_element(by = locationType, value = locatorExpression))
+        element = WebDriverWait(driver, 1).until(lambda x: x.find_element(by = locationType, value = locatorExpression))
         element.click()
     except Exception as e:
         pass
 
 def ifExistThenSendkeys(locationType,locatorExpression,inputContent):     # 若元素存在，则输值
     try:
+        loadPage()
         # element = findEleByDetail(driver,locationType,locatorExpression)
-        element = WebDriverWait(driver, 5).until(lambda x: x.find_element(by = locationType, value = locatorExpression))
+        element = WebDriverWait(driver, 1).until(lambda x: x.find_element(by = locationType, value = locatorExpression))
         element.clear()
         element.send_keys(inputContent)
     except Exception as e:
@@ -562,7 +564,8 @@ def BoxHandler(locationType,locatorExpression,textInBox):       # 若存在弹�
 def ifExistThenSelect(locationType,locatorExpression,inputContent):     # 若元素存在，则选择选项
     global driver
     try:
-        element = WebDriverWait(driver, 5).until(lambda x: x.find_element(by = locationType, value = locatorExpression))
+        loadPage()
+        element = WebDriverWait(driver, 1).until(lambda x: x.find_element(by = locationType, value = locatorExpression))
         el = Select(element)
         el.select_by_visible_text(inputContent)
 
@@ -580,7 +583,7 @@ def setDataByJS(locationType,locatorExpression,inputContent):       # 通过js�
         pass
 
 
-# ****************************************项目关键字****************************************
+# ****************************************项目关键字：销售合同新增+审批****************************************
 
 def writeContracNum(myInfo,*arg):
     # 该方法加断点时可往excel中写值成功，不加断点则写不进去，randomContracNum 方法暂时启用，TODO
@@ -604,4 +607,13 @@ def finalBoxClick(*arg):        # 处理合同审批后，弹出窗口点击操�
         element = driver.find_element_by_xpath("//button[.=\"返回我的单据\"]")
         element.click()
 
-
+def ifDoubleMsg(locationType,locatorExpression,*arg):      # 在销售合同新增-文本信息中，判断是否只有一条收款条款
+    global driver
+    try:
+        myValue = getAttribute(locationType,locatorExpression,"value")
+        if myValue == "":
+            click_Obj("xpath","//table[@id=\"sktkList\"]/descendant::tr[3]/td[6]/a")
+        else:
+            pass
+    except Exception as e:
+        raise e
