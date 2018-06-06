@@ -41,7 +41,8 @@ class ParseExcel(object):
         根据sheet名称获取sheet对象
         '''
         try:
-            sheet = self.workbook.get_sheet_by_name(sheetName)
+            sheet = self.workbook[sheetName]
+            # sheet = self.workbook.get_sheet_by_name(sheetName)
             return sheet
         except Exception as e:
             raise e
@@ -56,7 +57,8 @@ class ParseExcel(object):
         except Exception as e:
             raise e
 
-        sheet = self.workbook.get_sheet_by_name(sheetName)
+        sheet = self.workbook[sheetName]
+        # sheet = self.workbook.get_sheet_by_name(sheetName)
         return sheet
 
 
