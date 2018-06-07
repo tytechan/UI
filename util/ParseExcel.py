@@ -52,13 +52,13 @@ class ParseExcel(object):
         '''
         根据sheet索引号获取sheet对象
         '''
-        try:
-            sheetName = self.workbook.get_sheet_names()[sheetIndex]
-        except Exception as e:
-            raise e
-
-        sheet = self.workbook[sheetName]
-        # sheet = self.workbook.get_sheet_by_name(sheetName)
+        # try:
+        #     sheetName = self.workbook.get_sheet_names()[sheetIndex]
+        # except Exception as e:
+        #     raise e
+        #
+        # sheet = self.workbook[sheetName]
+        sheet = self.workbook.worksheets[sheetIndex]
         return sheet
 
 
