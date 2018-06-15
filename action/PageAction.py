@@ -462,6 +462,8 @@ def pageKeySimulate(locationType,locatorExpression,keyType,*arg):      # 模拟�
             element.send_keys(Keys.HOME)
         if keyType == "page_end":
             element.send_keys(Keys.END)
+        if keyType == "Tab":
+            element.send_keys(Keys.TAB)
     except Exception as e:
         raise e
 
