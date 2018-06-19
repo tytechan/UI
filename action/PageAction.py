@@ -503,8 +503,21 @@ def runProcessFile(fileName,*arg):    # autoit上传文件
     global driver
     try:
         myPath = parentDirPath + u"\\fileHandle\\" + fileName
-        print("********** 调用文件的据对路径为：",myPath," **********")
+        print("********** 调用文件的绝对路径为：",myPath," **********")
         os.system(myPath)
+        sleep(1)
+    except Exception as e:
+        raise e
+
+def page_upload_file(uploadFileName, *arg):  # autoit上传文件，可输入相对路径
+    global driver
+    try:
+        filePath = parentDirPath + u"\\fileHandle\\" + "file_upload_script.exe"
+        print("********** 调用文件的绝对路径为：", filePath, " **********")
+        uploadPath = parentDirPath + u"\\fileHandle\\upload_file\\" + uploadFileName
+        print("********** 上传文件的绝对路径为：", uploadPath, " **********")
+        cmd = "%s %s" %(filePath ,uploadPath)
+        os.popen(cmd)
         sleep(1)
     except Exception as e:
         raise e
