@@ -41,7 +41,7 @@ waitUtil = None
 7、等待：loadPage、sleep、waitPresenceOfElementLocated、waitVisibilityOfElementLocated、
         waitFrameToBeAvailableAndSwitchToIt；
 8、鼠标键盘模拟：moveToElement、init_Mouse、pageKeySimulate；
-9、外部程序调用：runProcessFile（uploadFile_x1、uploadFile_x2）；
+9、外部程序调用：runProcessFile、page_upload_file（uploadFile_x1、uploadFile_x2）；
 10、字符串操作：randomNum、pinyinTransform；
 11、带判断关键字：ifExistThenClick、ifExistThenSendkeys、ifExistThenSelect、BoxHandler；
 12、JS相关：setDataByJS；
