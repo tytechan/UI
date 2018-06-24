@@ -38,7 +38,7 @@ waitUtil = None
 4、获取信息：getTitle、getPageSource、getAttribute、getDate_Now；
 5、断言及判断：assert_string_in_pagesourse、assert_title；
 6、剪贴板操作：paste_string、press_key；
-7、等待：loadPage、sleep、waitPresenceOfElementLocated、waitVisibilityOfElementLocated、
+7、等待：loadPage、sleep、waitPresenceOfElementLocated、waitVisibilityOfElementLocated、wait_elements_vanish
         waitFrameToBeAvailableAndSwitchToIt；
 8、鼠标键盘模拟：moveToElement、init_Mouse、pageKeySimulate；
 9、外部程序调用：runProcessFile、page_upload_file（uploadFile_x1、uploadFile_x2）；
@@ -377,7 +377,7 @@ def press_key(mykey,*arg):        #模拟单按键，如： "tab"、"enter"
 def loadPage(*arg):     # 设置页面加载时间
     global driver
     try:
-        sleep(0.5)
+        sleep(1)
         driver.set_page_load_timeout(10)
         sleep(0.5)
     except TimeoutError as e:
@@ -417,6 +417,22 @@ def waitVisibilityOfElementLocated(locationType,locatorExpression,*arg):
         waitUtil.visibilityOfElementLocated(locationType,locatorExpression)
     except Exception as e:
         raise e
+
+def wait_elements_vanish(locationType,locatorExpression,*arg):
+    # 等待指定元素从页面中消失后，再进行下一步
+    global driver
+    driver.implicitly_wait(0)
+    for i in range(10):
+        try:
+            time.sleep(1)
+            elements = driver.find_elements(by = locationType, value = locatorExpression)
+            if not elements or not elements[0].is_displayed():
+                return True
+        except:
+            return True
+    driver.implicitly_wait(5)
+    from selenium.common.exceptions import TimeoutException
+    raise TimeoutException
 
 def waitFrameToBeAvailableAndSwitchToIt(locationType,locatorExpression,*arg):
     '''
