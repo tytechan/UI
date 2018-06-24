@@ -529,9 +529,13 @@ def runProcessFile(fileName,*arg):    # autoit上传文件
     except Exception as e:
         raise e
 
-def page_upload_file(uploadFileName, *arg):  # autoit上传文件，使用相对路径，需在操作值内输入上传文件名
-    global driver                            # 上传文件放置目录：..\fileHandle\upload_file
+def page_upload_file(locationType,locatorExpression,uploadFileName, *arg):
+    # 先点击上传按钮，再运行autoit文件
+    # autoit上传文件，使用相对路径，需在操作值内输入上传文件名
+    # 上传文件放置目录：..\fileHandle\upload_file
+    global driver
     try:
+        findElebyMethod(driver, locationType, locatorExpression).click()
         filePath = parentDirPath + u"\\fileHandle\\" + "file_upload_script.exe"
         print("********** 调用文件的绝对路径为：", filePath, " **********")
         uploadPath = parentDirPath + u"\\fileHandle\\upload_file\\" + uploadFileName
