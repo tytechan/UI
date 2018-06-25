@@ -45,14 +45,24 @@ def writeTextResult(sheetObj,rowNo,colsNo,testResult,CaseInfo = None,picPath = N
                 excelObj.writeCell(sheetObj,content = "",rowNo = rowNo,colsNo = CaseStep_errorinfo)
                 excelObj.writeCell(sheetObj,content = "",rowNo = rowNo,colsNo = CaseStep_errorpic)
 
+        # 返回值格可以填数据表列字母，根据列字母，将返回值存于数据表，rowNo行的指定列
         if colsNo == "DataSource":
             excelObj.writeCell(sheetObj, content=dataUse, rowNo=rowNo, colsNo=DataSource_isexecute)
-            if "过程" in returnValue:
-                returnValue = returnValue.split("过程")[1]
-                excelObj.writeCell(sheetObj,content=returnValue,rowNo=rowNo,colsNo=DataSource_processdata)
-            elif "结果" in returnValue:
-                returnValue = returnValue.split("结果")[1]
-                excelObj.writeCell(sheetObj,content=returnValue,rowNo=rowNo,colsNo=DataSource_finaldata)
+            # 返回值格式：位置信息[]返回值
+            # 位置信息
+            position = returnValue.split("[]")[0]
+            # 返回值内容
+            return_value = returnValue.split("[]")[1]
+            # 将返回值存于“过程池”或“结果池”
+            if position == "过程":
+                excelObj.writeCell(sheetObj,content=return_value,rowNo=rowNo,colsNo=DataSource_processdata)
+            elif position == "结果":
+                excelObj.writeCell(sheetObj,content=return_value,rowNo=rowNo,colsNo=DataSource_finaldata)
+            # 将返回值存于数据表指定列
+            elif position.encode('utf-8').isalpha():
+                position_coordinate = "%s%d" %(position, rowNo)
+                excelObj.writeCell(sheetObj, content=return_value, coordinate=position_coordinate)
+
 
     except Exception as e:
         print(u"********** excel写入执行结果失败，错误信息为： **********")

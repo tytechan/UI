@@ -170,7 +170,7 @@ class ParseExcel(object):
         '''
         if coordinate is not None:
             try:
-                coordinate = coordinate.decode('utf-8')
+                # coordinate = coordinate.decode('utf-8')
                 sheet[coordinate].value = content
                 # sheet.cell(coordinate = coordinate).value = content
                 if style is not None:

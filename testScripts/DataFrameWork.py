@@ -162,7 +162,7 @@ def  dataDriverRun(dataSourceSheetObj,stepSheetObj,stepSheetName,isLastModule,fu
 
                         # 判断返回值情况
                         if isReturnedValue:
-                            valueReturned = isReturnedValue + valueReturned
+                            valueReturned = isReturnedValue +"[]"+ valueReturned
                             writeTextResult(dataSourceSheetObj,rowNo = Looptime + 2,
                                             colsNo = "DataSource",testResult = "失败",
                                             returnValue = valueReturned)
