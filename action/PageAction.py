@@ -543,7 +543,7 @@ def page_upload_file(locationType,locatorExpression,uploadFileName, *arg):
         print("********** 上传文件的绝对路径为：", uploadPath, " **********")
         cmd = "%s %s" %(filePath ,uploadPath)
         os.popen(cmd)
-        sleep(1)
+        sleep(3)
     except Exception as e:
         raise e
 
