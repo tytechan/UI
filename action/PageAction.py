@@ -43,7 +43,8 @@ waitUtil = None
 8、鼠标键盘模拟：moveToElement、init_Mouse、pageKeySimulate；
 9、外部程序调用：runProcessFile、page_upload_file（uploadFile_x1、uploadFile_x2）；
 10、字符串操作：randomNum、pinyinTransform；
-11、带判断关键字：ifExistThenClick、ifExistThenSendkeys、ifExistThenSelect、BoxHandler；
+11、带判断关键字：ifExistThenClick、ifExistThenSendkeys、ifExistThenSelect、BoxHandler、ifExistThenReturnAttribute、
+    ifExistThenReturnOperateValue
 12、JS相关：setDataByJS；
 13、项目关键字：销售合同新增+审批：finalBoxClick、ifDoubleMsg（writeContracNum）
 '''
@@ -610,6 +611,36 @@ def ifExistThenSelect(locationType,locatorExpression,inputContent):     # 若元
 
     except Exception as e:
         pass
+
+def ifExistThenReturnAttribute(locationType,locatorExpression,attributeType,*arg):
+    # 若元素存在，则获取页面元素属性值，并转化为拼音字母（查审批岗位专用）
+    global driver
+    from pypinyin import lazy_pinyin
+    try:
+        element = WebDriverWait(driver, 1).until(lambda x: x.find_element(by=locationType, value=locatorExpression))
+        attributeValue = element.get_attribute(attributeType)
+        if attributeValue is None:
+            if attributeType == "text":
+                attributeValue = element.text
+        # 将attributeValue以逗号分割，用第一个值转为拼音
+        if "," in attributeValue:
+            attributeValue = attributeValue.split(",")[0]
+        # 将属性值转为拼音字母
+        strTransformed = ''.join(lazy_pinyin(attributeValue))
+
+        return strTransformed
+    except Exception as e:
+        return ""
+
+def ifExistThenReturnOperateValue(locationType, locatorExpression, operateValue, *arg):
+    # 若元素存在，则返回表格操作值
+    global driver
+    try:
+        element = WebDriverWait(driver, 1).until(lambda x: x.find_element(by=locationType, value=locatorExpression))
+        if element is not None:
+            return operateValue
+    except Exception as e:
+        return ""
 
 # ****************************************JS相关****************************************
 
