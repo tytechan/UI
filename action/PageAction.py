@@ -33,7 +33,7 @@ waitUtil = None
 1、浏览器操作:open_browser、visit_url、close_browser、close_page、switch_to_frame、switch_to_default_content、
             maximize_browser、switch_to_now_window、refresh_page、scroll_slide_field；
 2、常规操作：clear、specObjClear、click_Obj、click_SpecObj、sendkeys_To_Obj、sendkeys_To_SpecObj、
-            SelectValues（setValueByTextAside、selectValueByTextAside）；
+            SelectValues、xpath_combination_click、（setValueByTextAside、selectValueByTextAside）；
 3、辅助定位：highlightElement、highlightElements、whichIsEnabled、whichIsDisplayed；
 4、获取信息：getTitle、getPageSource、getAttribute、getDate_Now；
 5、断言及判断：assert_string_in_pagesourse、assert_title；
@@ -199,6 +199,21 @@ def SelectValues(locationType,locatorExpression,inputContent):      #输入框�
     try:
         el = Select(findEleByDetail(driver,locationType,locatorExpression))
         el.select_by_visible_text(inputContent)
+    except Exception as e:
+        raise e
+
+def xpath_combination_click(attributeType, locatorExpression, attributeValue, *arg):
+    # 将“操作值”与“元素定位表达式”拼接到一起组成完整表达式定位元素
+    # 将“操作值”放入“元素定位表达式”的“[]”的指定属性值中，由xpath定位元素后，并执行点击操作
+    try:
+        combination_left = locatorExpression.split("[]")[0]
+        combination_right = locatorExpression.split("[]")[1]
+        if attributeType == "text()":
+            combination = combination_left + '[' + attributeType +'="' + attributeValue + '"]' + combination_right
+        else:
+            combination = combination_left + '[@' + attributeType +'="' + attributeValue + '"]' + combination_right
+        element = findElebyMethod(driver, 'xpath', combination)
+        element.click()
     except Exception as e:
         raise e
 
