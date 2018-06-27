@@ -446,7 +446,7 @@ def wait_elements_vanish(locationType,locatorExpression,*arg):
                 return True
         except:
             return True
-    driver.implicitly_wait(5)
+    driver.implicitly_wait(1)
     from selenium.common.exceptions import TimeoutException
     raise TimeoutException
 
@@ -591,8 +591,7 @@ def pinyinTransform(myStr,*arg):        # 将汉字转换成拼音
 
 def ifExistThenClick(locationType,locatorExpression,*arg):     # 若元素存在，则点击
     try:
-        loadPage()
-        # element = findEleByDetail(driver,locationType,locatorExpression)
+        driver.implicitly_wait(1)
         element = WebDriverWait(driver, 1).until(lambda x: x.find_element(by = locationType, value = locatorExpression))
         element.click()
     except Exception as e:
@@ -600,8 +599,7 @@ def ifExistThenClick(locationType,locatorExpression,*arg):     # 若元素存在
 
 def ifExistThenSendkeys(locationType,locatorExpression,inputContent):     # 若元素存在，则输值
     try:
-        loadPage()
-        # element = findEleByDetail(driver,locationType,locatorExpression)
+        driver.implicitly_wait(1)
         element = WebDriverWait(driver, 1).until(lambda x: x.find_element(by = locationType, value = locatorExpression))
         element.clear()
         element.send_keys(inputContent)
@@ -619,7 +617,7 @@ def BoxHandler(locationType,locatorExpression,textInBox):       # 若存在弹�
 def ifExistThenSelect(locationType,locatorExpression,inputContent):     # 若元素存在，则选择选项
     global driver
     try:
-        loadPage()
+        driver.implicitly_wait(1)
         element = WebDriverWait(driver, 1).until(lambda x: x.find_element(by = locationType, value = locatorExpression))
         el = Select(element)
         el.select_by_visible_text(inputContent)
@@ -632,6 +630,7 @@ def ifExistThenReturnAttribute(locationType,locatorExpression,attributeType,*arg
     global driver
     from pypinyin import lazy_pinyin
     try:
+        driver.implicitly_wait(1)
         element = WebDriverWait(driver, 1).until(lambda x: x.find_element(by=locationType, value=locatorExpression))
         attributeValue = element.get_attribute(attributeType)
         if attributeValue is None:
@@ -651,6 +650,7 @@ def ifExistThenReturnOperateValue(locationType, locatorExpression, operateValue,
     # 若元素存在，则返回表格操作值
     global driver
     try:
+        driver.implicitly_wait(1)
         element = WebDriverWait(driver, 1).until(lambda x: x.find_element(by=locationType, value=locatorExpression))
         if element is not None:
             return operateValue
