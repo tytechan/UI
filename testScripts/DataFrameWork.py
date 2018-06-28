@@ -84,7 +84,7 @@ def  dataDriverRun(dataSourceSheetObj,stepSheetObj,stepSheetName,isLastModule,fu
                     isReturnedValue = rowObj[CaseStep_isreturned - 1].value
 
                     if operateValue:
-                        if isinstance(operateValue,int):
+                        if isinstance(operateValue,int) or isinstance(operateValue,float):
                             print("*********** 直接通过关键字驱动输入的值为： ",operateValue," ***********")
                             operateValue = str(operateValue)
                             print("数值型operateValue值为：",operateValue)

@@ -393,16 +393,17 @@ def press_key(mykey,*arg):        #模拟单按键，如： "tab"、"enter"
 def loadPage(*arg):     # 设置页面加载时间
     global driver
     try:
-        sleep(1)
-        driver.set_page_load_timeout(10)
         sleep(0.5)
+        driver.set_page_load_timeout(10)
+        # 等待加载动图消失
+        wait_elements_vanish('xpath','//div[@id="loading" and contains(@style,"display: block;")]')
     except TimeoutError as e:
         print("********** 等待页面加载超时 **********")
         raise TimeoutError(e)
 
 def sleep(sleepSeconds,*arg):       #强制等待
     try:
-        time.sleep(int(sleepSeconds))
+        time.sleep(float(sleepSeconds))
     except Exception as e:
         raise e
 
