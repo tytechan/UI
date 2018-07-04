@@ -161,11 +161,12 @@ def  dataDriverRun(dataSourceSheetObj,stepSheetObj,stepSheetName,isLastModule,fu
                                             colsNo="CaseStep", testResult="成功")
 
                         # 判断返回值情况
-                        if isReturnedValue:
-                            valueReturned = isReturnedValue +"[]"+ valueReturned
+                        if isReturnedValue and valueReturned != '':
+                            # 将返回值坐标、返回值，组合成JSON
+                            JSON_returned = compose_JSON(isReturnedValue, valueReturned)
                             writeTextResult(dataSourceSheetObj,rowNo = Looptime + 2,
                                             colsNo = "DataSource",testResult = "失败",
-                                            returnValue = valueReturned)
+                                            returnValue = JSON_returned)
                             valueReturned = None
 
                 if isToBreak:       #执行失败跳出标志

@@ -42,7 +42,7 @@ waitUtil = None
         waitFrameToBeAvailableAndSwitchToIt；
 8、鼠标键盘模拟：moveToElement、init_Mouse、pageKeySimulate；
 9、外部程序调用：runProcessFile、page_upload_file（uploadFile_x1、uploadFile_x2）；
-10、字符串操作：randomNum、pinyinTransform；
+10、字符串操作：randomNum、pinyinTransform、compose_JSON；
 11、带判断关键字：ifExistThenClick、ifExistThenSendkeys、ifExistThenSelect、BoxHandler、ifExistThenReturnAttribute、
     ifExistThenReturnOperateValue
 12、JS相关：setDataByJS；
@@ -585,6 +585,19 @@ def pinyinTransform(myStr,*arg):        # 将汉字转换成拼音
         from pypinyin import pinyin, lazy_pinyin
         strTransformed = ''.join(lazy_pinyin(myStr))
         return strTransformed
+    except Exception as e:
+        raise e
+
+def compose_JSON(coordinate, content):
+    try:
+        # coordinate、content以"[]"为分割符
+        # 以{coordinate.split("[]")[i]:content.split("[]")[i]}，组成JSON
+        JSON_return = {}
+        for i in range(len(coordinate.split("[]"))):
+            JSON_k = coordinate.split("[]")[i]
+            JSON_v = content.split("[]")[i]
+            JSON_return[JSON_k] = JSON_v
+        return JSON_return
     except Exception as e:
         raise e
 
