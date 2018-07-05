@@ -371,6 +371,23 @@ def assert_title(titleStr,*arg):     #断言判断当前页面标题是否存在
     except Exception as e:
         raise e
 
+def assert_list(locationType, locatorExpression, listStr, *arg):    # 断言判断下拉框选项是否包含指定值
+    '''若校验多值，用“|”分开'''
+    global driver
+    element = findElebyMethod(driver, locationType, locatorExpression)
+    # 获取下拉框所有元素对象
+    myOptions = Select(element).options
+    myOptionValues = map(lambda option: option.text, myOptions)
+    # print("myOptionValues:",myOptionValues)
+
+    for option in listStr.split("|"):
+        try:
+            assert option in myOptionValues, u"下拉框中未找到该元素: %s ！" % option
+        except AssertionError as e:
+            raise AssertionError(e)
+        except Exception as e:
+            raise e
+
 # ****************************************剪贴板操作****************************************
 
 def paste_string(pasteString,*arg):     #模拟 ctrl+v
