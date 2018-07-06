@@ -36,7 +36,7 @@ waitUtil = None
             SelectValues、xpath_combination_click、（setValueByTextAside、selectValueByTextAside）；
 3、辅助定位：highlightElement、highlightElements、whichIsEnabled、whichIsDisplayed；
 4、获取信息：getTitle、getPageSource、getAttribute、getDate_Now；
-5、断言及判断：assert_string_in_pagesourse、assert_title；
+5、断言及判断：assert_string_in_pagesourse、assert_title、assert_list；
 6、剪贴板操作：paste_string、press_key；
 7、等待：loadPage、sleep、waitPresenceOfElementLocated、waitVisibilityOfElementLocated、wait_elements_vanish
         waitFrameToBeAvailableAndSwitchToIt；
@@ -44,7 +44,7 @@ waitUtil = None
 9、外部程序调用：runProcessFile、page_upload_file（uploadFile_x1、uploadFile_x2）；
 10、字符串操作：randomNum、pinyinTransform、compose_JSON；
 11、带判断关键字：ifExistThenClick、ifExistThenSendkeys、ifExistThenSelect、BoxHandler、ifExistThenReturnAttribute、
-    ifExistThenReturnOperateValue
+    ifExistThenReturnOperateValue、ifExistThenChooseOperateValue、ifExistThenChooseOperateValue_diffPosition
 12、JS相关：setDataByJS；
 13、项目关键字：销售合同新增+审批：finalBoxClick、ifDoubleMsg（writeContracNum）
 '''
@@ -688,12 +688,48 @@ def ifExistThenReturnOperateValue(locationType, locatorExpression, operateValue,
     except Exception as e:
         return ""
 
+def ifExistThenChooseOperateValue(locationType, locatorExpression, operateValue, *arg):
+    # 返回值格，需填写一个位置信息。两个返回值择一，填入同一个格中。
+    # 表格操作值填写格式：元素存在时返回值|元素不存在时返回值
+    # 若元素存在，则返回表格操作值中，"|"之前的值；元素不存在，则返回"|"之后的值
+    global driver
+    try:
+        driver.implicitly_wait(1)
+        exist_value = operateValue.split("|")[0]
+        not_exist_value = operateValue.split("|")[1]
+        element = WebDriverWait(driver, 1).until(lambda x: x.find_element(by=locationType, value=locatorExpression))
+        if element is not None:
+            return exist_value
+    except Exception as e:
+        return not_exist_value
+
+def ifExistThenChooseOperateValue_diffPosition(locationType, locatorExpression, operateValue, *arg):
+    # 返回值格，需填写两个位置信息，中间以"[]"分隔。两个返回值择一，填入不同格中。
+    # 表格操作值填写格式：元素存在时返回值|元素不存在时返回值
+    # 若元素存在，则返回表格操作值中，"|"之前的值，写入"[]"之前的坐标中；
+    # 元素不存在，则返回"|"之后的值，写入"[]"之后的坐标中；
+    global driver
+    try:
+        driver.implicitly_wait(1)
+        # 元素存在时，返回的值
+        exist_value = operateValue.split("|")[0]
+        exist_return_value = "%s[]" %(exist_value)
+        # 元素不存在时，返回的值
+        not_exist_value = operateValue.split("|")[1]
+        not_exist_return_value = "[]%s" % (not_exist_value)
+        element = WebDriverWait(driver, 1).until(lambda x: x.find_element(by=locationType, value=locatorExpression))
+        if element is not None:
+            return exist_return_value
+    except Exception as e:
+        return not_exist_return_value
+
 # ****************************************JS相关****************************************
 
 def setDataByJS(locationType,locatorExpression,inputContent):       # 通过js修改日期空间的“readonly属性”
     try:
         element = findEleByDetail(driver,locationType,locatorExpression)
         removeAttribute(driver,element,"readonly")
+        element.clear()
         element.send_keys(inputContent)
     except Exception as e:
         pass

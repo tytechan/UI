@@ -102,7 +102,7 @@ def  dataDriverRun(dataSourceSheetObj,stepSheetObj,stepSheetName,isLastModule,fu
 
                         if operateValue.startswith("&"):
                             '''
-                            若以“*”开头，则说明该字符串为纯英文，但不是调用数据sheet情况
+                            若以“&”开头，则说明该字符串为纯英文，但不是调用数据sheet情况
                             '''
                             operateValue = str(operateValue.split("&")[1])
 
