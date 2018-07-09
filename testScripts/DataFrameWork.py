@@ -87,18 +87,52 @@ def  dataDriverRun(dataSourceSheetObj,stepSheetObj,stepSheetName,isLastModule,fu
                         if isinstance(operateValue,int) or isinstance(operateValue,float):
                             print("*********** 直接通过关键字驱动输入的值为： ",operateValue," ***********")
                             operateValue = str(operateValue)
-                            print("数值型operateValue值为：",operateValue)
-                        if operateValue and operateValue.encode('utf-8').isalpha():
+                            print("数值型var值为：",operateValue)
+
+                        processValue = ""
+                        myCount = operateValue.count("|") + 1
+
+                        if operateValue and operateValue.encode('utf-8').isalpha() and myCount == 1:
                             '''
                             operateValue不为空，且所有字符均为字母，则说明为调用情况
                             '''
-                            print("字母型operateValue值为：",operateValue)
+                            print("字母型var值为：",operateValue)
                             coordinate = operateValue + str(Looptime + 2)
                             print("获取数据坐标coordinate为：",coordinate)
                             operateValue = excelObj.getCellOfValue(dataSourceSheetObj,coordinate = coordinate)
                             operateValue = str(operateValue)
 
-                            print("********** 数据表sheet中调用单元格为： ",coordinate," 对应值为： ",operateValue," **********")
+                        if myCount > 1:
+                            myLoop = 0
+                            for var in operateValue.split("|"):
+                                if isinstance(var,int) or isinstance(var,float):
+                                    print("*********** 直接通过关键字驱动输入的值为： ",var," ***********")
+                                    var = str(var)
+                                    print("数值型var值为：",var)
+
+                                if var and var.encode('utf-8').isalpha() and var.startswith("&") == False:
+                                    '''
+                                    var不为空，且所有字符均为字母，则说明为调用情况
+                                    '''
+                                    print("字母型var值为：",var)
+                                    coordinate = var + str(Looptime + 2)
+                                    print("获取数据坐标coordinate为：",coordinate)
+                                    var = excelObj.getCellOfValue(dataSourceSheetObj,coordinate = coordinate)
+                                    var = str(var)
+
+                                    print("********** 数据表sheet中调用单元格为： ",coordinate," 对应值为： ",var," **********")
+
+                                if myLoop > 0:
+                                    if myCount == 1:
+                                        processValue += var.replace("&","")
+                                    else:
+                                        processValue += "|"+var.replace("&","")
+                                else:
+                                    processValue += var
+                                myLoop += 1
+
+                            operateValue = processValue
+                        print("********** 拼接后 operateValue 值为： ",operateValue," **********")
 
                         if operateValue.startswith("&"):
                             '''

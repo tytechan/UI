@@ -47,6 +47,7 @@ waitUtil = None
     ifExistThenReturnOperateValue、ifExistThenChooseOperateValue、ifExistThenChooseOperateValue_diffPosition
 12、JS相关：setDataByJS；
 13、项目关键字：销售合同新增+审批：finalBoxClick、ifDoubleMsg（writeContracNum）
+               项目关键字：采购模块：checkApprover
 '''
 # ****************************************浏览器操作****************************************
 
@@ -769,3 +770,27 @@ def ifDoubleMsg(locationType,locatorExpression,*arg):      # 在销售合同新�
             pass
     except Exception as e:
         raise e
+
+# ****************************************项目关键字：采购模块****************************************
+def checkApprover(varInfo):
+    '''
+    验证如果info1=info2时，info3是否包含于info4，用于判断审批角色是否正确
+    :param varInfo:格式为“info1|info2|info3|info4”
+    :return:None
+    '''
+    # 根据业务规则校验审批人范围是否正确
+    myVar1 = varInfo.split("|",3)[0]
+    varValue = varInfo.split("|",3)[1]
+    myVar2 = varInfo.split("|",3)[2]
+    approverNames = varInfo.split("|",3)[3]
+
+    if myVar1 == varValue:
+        myNames = approverNames.split("|")
+        try:
+            assert myVar2 in myNames, u"下一岗审批人为'%s'，与预期不符 ！" %myVar2
+        except AssertionError as e:
+            raise AssertionError(e)
+        except Exception as e:
+            raise e
+
+
