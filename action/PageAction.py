@@ -775,17 +775,17 @@ def ifDoubleMsg(locationType,locatorExpression,*arg):      # 在销售合同新�
 def checkApprover(varInfo):
     '''
     验证如果info1=info2时，info3是否包含于info4，用于判断审批角色是否正确
-    :param varInfo:格式为“info1|info2|info3|info4”
+    :param varInfo:格式为“info1|info2|info3|info4”，info内部用“、”隔开
     :return:None
     '''
     # 根据业务规则校验审批人范围是否正确
     myVar1 = varInfo.split("|",3)[0]
-    varValue = varInfo.split("|",3)[1]
+    varValue = varInfo.split("|",3)[1].split("、")
     myVar2 = varInfo.split("|",3)[2]
     approverNames = varInfo.split("|",3)[3]
 
-    if myVar1 == varValue:
-        myNames = approverNames.split("|")
+    if myVar1 in varValue:
+        myNames = approverNames.split("、")
         try:
             assert myVar2 in myNames, u"下一岗审批人为'%s'，与预期不符 ！" %myVar2
         except AssertionError as e:
