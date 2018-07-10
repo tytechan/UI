@@ -778,19 +778,29 @@ def checkApprover(varInfo):
     :param varInfo:格式为“info1|info2|info3|info4”，info内部用“、”隔开
     :return:None
     '''
-    # 根据业务规则校验审批人范围是否正确
-    myVar1 = varInfo.split("|",3)[0]
-    varValue = varInfo.split("|",3)[1].split("、")
-    myVar2 = varInfo.split("|",3)[2]
-    approverNames = varInfo.split("|",3)[3]
+    myCount = varInfo.count("|")
+    conditionNum = int((myCount-1)/2)
 
-    if myVar1 in varValue:
-        myNames = approverNames.split("、")
+    JSON_Info = {}
+    for i in range(1,conditionNum+1):
+        info_Key = varInfo.split("|")[2*i-2]
+        info_Value = varInfo.split("|")[2*i-1]
+        JSON_Info[info_Key] = info_Value
         try:
-            assert myVar2 in myNames, u"下一岗审批人为'%s'，与预期不符 ！" %myVar2
+            assert info_Key in info_Value
+        except:
+            print("********** 该流程不符合此条件校验 **********")
+            print(JSON_Info)
+            return
+
+        # 根据业务规则校验审批人范围是否正确
+        myValue = varInfo.split("|")[myCount - 1]
+        approverNames = varInfo.split("|")[myCount]
+        myNames = approverNames.split("、")
+
+        try:
+            assert myValue in myNames, u"下一岗审批人为'%s'，与预期不符 ！" %myValue
         except AssertionError as e:
             raise AssertionError(e)
         except Exception as e:
             raise e
-
-
