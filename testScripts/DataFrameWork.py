@@ -59,6 +59,10 @@ def  dataDriverRun(dataSourceSheetObj,stepSheetObj,stepSheetName,isLastModule,fu
                 if jumpToBreak:
                     # 若对应表格内值不为“执行”，则不用执行该模块
                     logging.info(u">> 跳过该模块所有步骤...")
+                    if isLastModule:
+                        writeTextResult(sheetObj = dataSourceSheetObj,rowNo = Looptime + 2,
+                                        colsNo = "DataSource",testResult = "成功",
+                                        dataUse = "已使用")
                     break
 
 
