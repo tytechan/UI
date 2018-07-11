@@ -96,15 +96,32 @@ def  dataDriverRun(dataSourceSheetObj,stepSheetObj,stepSheetName,isLastModule,fu
                         processValue = ""
                         myCount = operateValue.count("|") + 1
 
-                        if operateValue and operateValue.encode('utf-8').isalpha() and myCount == 1:
-                            '''
-                            operateValue不为空，且所有字符均为字母，则说明为调用情况
-                            '''
-                            print("字母型var值为：",operateValue)
-                            coordinate = operateValue + str(Looptime + 2)
-                            print("获取数据坐标coordinate为：",coordinate)
-                            operateValue = excelObj.getCellOfValue(dataSourceSheetObj,coordinate = coordinate)
-                            operateValue = str(operateValue)
+
+
+                        # TODO .01：从“数据表”sheet按列号取值方法可优化（原方法为通过固定列号查询，新方法为通过表头名称遍历）
+                        # if operateValue and operateValue.encode('utf-8').isalpha() and myCount == 1:
+                        #     '''
+                        #     operateValue不为空，且所有字符均为字母，则说明为调用情况
+                        #     '''
+                        #     print("字母型var值为：",operateValue)
+                        #     coordinate = operateValue + str(Looptime + 2)
+                        #     print("获取数据坐标coordinate为：",coordinate)
+                        #     operateValue = excelObj.getCellOfValue(dataSourceSheetObj,coordinate = coordinate)
+                        #     operateValue = str(operateValue)
+
+                        if operateValue.startswith("#") == True:
+                            myColumn = 1
+                            for myBox in excelObj.getRow(dataSourceSheetObj, 1):
+                                if myBox.value == None:
+                                    break
+                                elif myBox.value == operateValue.replace("#",""):
+                                    myValue = excelObj.getCellOfValue(dataSourceSheetObj,rowNo=Looptime+2,colsNo=myColumn)
+                                    print("********** ",operateValue,"的值为：",myValue," **********")
+                                    operateValue = str(myValue)
+                                    break
+                                myColumn += 1
+
+
 
                         if myCount > 1:
                             myLoop = 0
@@ -114,23 +131,38 @@ def  dataDriverRun(dataSourceSheetObj,stepSheetObj,stepSheetName,isLastModule,fu
                                     var = str(var)
                                     print("数值型var值为：",var)
 
-                                if var and var.encode('utf-8').isalpha() and var.startswith("&") == False:
-                                    '''
-                                    var不为空，且所有字符均为字母，则说明为调用情况
-                                    '''
-                                    print("字母型var值为：",var)
-                                    coordinate = var + str(Looptime + 2)
-                                    print("获取数据坐标coordinate为：",coordinate)
-                                    var = excelObj.getCellOfValue(dataSourceSheetObj,coordinate = coordinate)
-                                    var = str(var)
 
-                                    print("********** 数据表sheet中调用单元格为： ",coordinate," 对应值为： ",var," **********")
+                                # TODO .02:此处为修改带分隔符“|”的operateValue中调用和纯字母的情况
+                                # if var and var.encode('utf-8').isalpha() and var.startswith("&") == False:
+                                #     '''
+                                #     var不为空，且所有字符均为字母，则说明为调用情况
+                                #     '''
+                                #     print("字母型var值为：",var)
+                                #     coordinate = var + str(Looptime + 2)
+                                #     print("获取数据坐标coordinate为：",coordinate)
+                                #     var = excelObj.getCellOfValue(dataSourceSheetObj,coordinate = coordinate)
+                                #     var = str(var)
+                                #     print("********** 数据表sheet中调用单元格为： ",coordinate," 对应值为： ",var," **********")
+
+                                if var.startswith("#") == True:
+                                    myColumn = 1
+                                    for myBox in excelObj.getRow(dataSourceSheetObj, 1):
+                                        if myBox.value == None:
+                                            break
+                                        elif myBox.value == operateValue.replace("#",""):
+                                            myValue = excelObj.getCellOfValue(dataSourceSheetObj,rowNo=Looptime+2,colsNo=myColumn)
+                                            print("********** ",operateValue,"的值为：",myValue," **********")
+                                            operateValue = str(myValue)
+                                            break
+                                        myColumn += 1
+
+
 
                                 if myLoop > 0:
                                     if myCount == 1:
-                                        processValue += var.replace("&","")
+                                        processValue += var
                                     else:
-                                        processValue += "|"+var.replace("&","")
+                                        processValue += "|"+var
                                 else:
                                     processValue += var
                                 myLoop += 1
@@ -138,11 +170,15 @@ def  dataDriverRun(dataSourceSheetObj,stepSheetObj,stepSheetName,isLastModule,fu
                             operateValue = processValue
                         print("********** 拼接后 operateValue 值为： ",operateValue," **********")
 
-                        if operateValue.startswith("&"):
-                            '''
-                            若以“&”开头，则说明该字符串为纯英文，但不是调用数据sheet情况
-                            '''
-                            operateValue = str(operateValue.split("&")[1])
+
+                        # TODO .03：由于TODO .01中删除纯字母从“数据表”sheet取值情况，则一下方法也可删除
+                        # if operateValue.startswith("&"):
+                        #     '''
+                        #     若以“&”开头，则说明该字符串为纯英文，但不是调用数据sheet情况
+                        #     '''
+                        #     operateValue = str(operateValue.split("&")[1])
+
+
 
                     # 拼接字符串获得需要执行的python表达式，以对应 PageAction.py 中对应函数方法
                     tmpStr = "'%s','%s'" %(locationType.lower(),
