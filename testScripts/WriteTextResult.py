@@ -60,10 +60,21 @@ def writeTextResult(sheetObj,rowNo,colsNo,testResult,CaseInfo = None,picPath = N
                     excelObj.writeCell(sheetObj,content=return_value,rowNo=rowNo,colsNo=DataSource_processdata)
                 elif position == "结果":
                     excelObj.writeCell(sheetObj,content=return_value,rowNo=rowNo,colsNo=DataSource_finaldata)
-                # 将返回值存于数据表指定列
-                elif position.encode('utf-8').isalpha():
-                    position_coordinate = "%s%d" %(position, rowNo)
-                    excelObj.writeCell(sheetObj, content=return_value, coordinate=position_coordinate)
+
+                # 将返回值存于数据表指定列，TODO .04:通过列号修改为通过列表头返回值
+                # elif position.encode('utf-8').isalpha():
+                #     position_coordinate = "%s%d" %(position, rowNo)
+                #     excelObj.writeCell(sheetObj, content=return_value, coordinate=position_coordinate)
+
+                elif position.startswith("#") == True:
+                    myColumn = 1
+                    for myBox in excelObj.getRow(dataSourceSheetObj, 1):
+                        if myBox.value == None:
+                            break
+                        elif myBox.value == position.replace("#",""):
+                            excelObj.writeCell(sheetObj, content=return_value,rowNo=rowNo,colsNo=myColumn)
+                            break
+                        myColumn += 1
 
 
     except Exception as e:
