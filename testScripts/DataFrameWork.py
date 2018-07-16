@@ -5,7 +5,7 @@ from . import *
 from testScripts.WriteTextResult import *
 from util.Log import *
 
-def  dataDriverRun(dataSourceSheetObj,stepSheetObj,stepSheetName,isLastModule,funcName):
+def  dataDriverRun(dataSourceSheetObj,stepSheetObj,stepSheetName,isLastModule,funcName,picDir):
     '''
     :param dataSourceSheetObj: 数据模块sheet对象
     :param stepSheetObj: 功能&步骤模块sheet对象
@@ -37,6 +37,16 @@ def  dataDriverRun(dataSourceSheetObj,stepSheetObj,stepSheetName,isLastModule,fu
             isToBreak = False
             # 先在数据模块sheet中遍历，判断该行数据是否已执行
             if ExcuteMsg.value != "已使用":
+                # 写入该流程截图路径
+                myColumn = 1
+                for myBox in excelObj.getRow(dataSourceSheetObj, 1):
+                    if myBox.value == None:
+                        break
+                    elif myBox.value == "截图路径":
+                        excelObj.writeCell(dataSourceSheetObj, content=picDir,rowNo=Looptime+2,colsNo=myColumn)
+                        break
+                    myColumn += 1
+
                 print("********** 开始调用第 ",Looptime + 2," 行数据 **********")
 
                 # 该功能模块不执行时，跳出循环，TODO
@@ -209,7 +219,7 @@ def  dataDriverRun(dataSourceSheetObj,stepSheetObj,stepSheetName,isLastModule,fu
                                       %rowObj[CaseStep_stepdescribe - 1].value,
                                       errorInfo)
                         # 截取异常截图
-                        capturePic = capture_screen()
+                        capturePic = capture_screen(picDir)
                         writeTextResult(stepSheetObj,rowNo = myRowInStepSheet,
                                         colsNo = "CaseStep",testResult = "失败",
                                         CaseInfo = str(errorInfo),picPath = capturePic)
@@ -226,7 +236,7 @@ def  dataDriverRun(dataSourceSheetObj,stepSheetObj,stepSheetName,isLastModule,fu
                         # 正常结束后截图（混合驱动），myValue为”是“则截图，TODO
                         myValue = rowObj[CaseStep_lockpic - 1].value
                         if myValue == '是':
-                            capturePic = capture_screen()
+                            capturePic = capture_screen(picDir)
                             writeTextResult(stepSheetObj,rowNo = myRowInStepSheet,
                                                 colsNo = "CaseStep",testResult = "成功",
                                                 CaseInfo = str(myValue),picPath = capturePic)

@@ -16,11 +16,12 @@ def getCurrentTime():       #获取当前时间，确保日期中无非法字符
     nowTime = timeStr.strftime('%H-%M-%S.%f')
     return nowTime
 
-def createCurrentDateDir():     #创建截图存放目录
+def createCurrentDateDir():
     dirName = os.path.join(screenPicturesDir,getCurrentDate())
     if not os.path.exists(dirName):
         os.makedirs(dirName)
     return dirName
+
 
 if __name__ == "__main__":
     print('当前日期为',getCurrentDate())

@@ -8,8 +8,9 @@ from util.Log import *
 from action.PageAction import *
 
 
-def mixDriverRun():
+def mixDriverRun(picDir):
     try:
+        logging.info("********** 该流程截图路径为：'%s' **********" %picDir)
         # 根据excel中sheet名称获取sheet对象
         caseIntroSheet = excelObj.getSheetByName(u"数据入口")
         # 获取“数据入口”sheet中“是否执行”列对象
@@ -74,7 +75,7 @@ def mixDriverRun():
                         isLastModule = True
                     # 启用数据驱动框架
                     result = DataFrameWork.dataDriverRun(dataSheetObj,stepSheetObj,
-                                                         stepSheetName,isLastModule,funcName)
+                                                         stepSheetName,isLastModule,funcName,picDir)
 
                     if result == "模块执行成功":
                         logging.info(u"功能 '%s' 执行成功" %funcName)
@@ -157,7 +158,7 @@ def mixDriverRun():
                                           %stepRow[CaseStep_stepdescribe - 1].value,
                                           errorInfo)
                             # 截取异常截图
-                            capturePic = capture_screen()
+                            capturePic = capture_screen(picDir)
                             writeTextResult(stepSheetObj,rowNo = myRowInStepSheet,
                                             colsNo = "CaseStep",testResult = "失败",
                                             CaseInfo = str(errorInfo),picPath = capturePic)
@@ -176,7 +177,7 @@ def mixDriverRun():
                             myValue = stepRow[CaseStep_lockpic - 1].value
 
                             if myValue == '是':
-                                capturePic = capture_screen()
+                                capturePic = capture_screen(picDir)
                                 writeTextResult(stepSheetObj,rowNo = myRowInStepSheet,
                                                     colsNo = "CaseStep",testResult = "成功",
                                                     CaseInfo = myValue,picPath = capturePic)

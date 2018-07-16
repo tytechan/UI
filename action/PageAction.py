@@ -33,7 +33,7 @@ waitUtil = None
 1、浏览器操作:open_browser、visit_url、close_browser、close_page、switch_to_frame、switch_to_default_content、
             maximize_browser、switch_to_now_window、refresh_page、scroll_slide_field；
 2、常规操作：clear、specObjClear、click_Obj、click_SpecObj、sendkeys_To_Obj、sendkeys_To_SpecObj、
-            SelectValues、xpath_combination_click、（setValueByTextAside、selectValueByTextAside）；
+            SelectValues、xpath_combination_click、capture_screen（setValueByTextAside、selectValueByTextAside,capture_screen_old）；
 3、辅助定位：highlightElement、highlightElements、whichIsEnabled、whichIsDisplayed；
 4、获取信息：getTitle、getPageSource、getAttribute、getDate_Now；
 5、断言及判断：assert_string_in_pagesourse、assert_title、assert_list；
@@ -239,12 +239,27 @@ def selectValueByTextAside(myInfo,*arg):       # 根据输入框旁边的字段�
     except Exception as e:
         raise e
 
-def capture_screen(*arg):       #截图
+def capture_screen_old(*arg):       #截图，旧，该方法在日期路径下无法区分具体流程的截图
     global driver
     # 获取当前时间，精确到秒
     currentTime = getCurrentTime()
     # 拼接一场图片保存的绝对路径及名称
     picNameAndPath = str(createCurrentDateDir()) + "\\" + str(currentTime) + ".png"
+    try:
+        # 截屏，并保存为本地图片
+        driver.get_screenshot_as_file(picNameAndPath.replace('\\',r'\\'))
+        # print("picNameAndPath 为：",picNameAndPath.replace('\\',r'\\'))
+    except Exception as e:
+        raise e
+    else:
+        return picNameAndPath
+
+def capture_screen(picDir,*arg):       #截图，新，保存截图路径从外部传进来，可在一级目录下添加二级目录
+    global driver
+    # 获取当前时间，精确到秒
+    currentTime = getCurrentTime()
+    # 拼接一场图片保存的绝对路径及名称
+    picNameAndPath = str(picDir) + "\\" + str(currentTime) + ".png"
     try:
         # 截屏，并保存为本地图片
         driver.get_screenshot_as_file(picNameAndPath.replace('\\',r'\\'))
