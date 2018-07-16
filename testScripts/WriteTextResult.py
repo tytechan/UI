@@ -68,7 +68,7 @@ def writeTextResult(sheetObj,rowNo,colsNo,testResult,CaseInfo = None,picPath = N
 
                 elif position.startswith("#") == True:
                     myColumn = 1
-                    for myBox in excelObj.getRow(dataSourceSheetObj, 1):
+                    for myBox in excelObj.getRow(sheetObj, 1):
                         if myBox.value == None:
                             break
                         elif myBox.value == position.replace("#",""):
