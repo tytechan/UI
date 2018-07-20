@@ -98,7 +98,11 @@ def mixDriverRun(picDir):
                                         rowNo = Looptime + 2,
                                         colsNo = "CaseIntro",testResult = "失败")
 
-                        logging.info(u"程序异常,请检查代码是否编写正确: \n%s" %result)
+                        if "chrome not reachable" in result:
+                            logging.info(u"程序异常,已手动终止程序: \n%s" %result)
+                            os._exit(0)
+                        else:
+                            logging.info(u"程序异常,请检查代码是否编写正确: \n%s" %result)
 
                         break
 
@@ -224,5 +228,10 @@ def mixDriverRun(picDir):
     except Exception as e:
         logging.info(u">> 共 %d 个功能模块, %d 个需要被执行,成功执行 %d 个 \n"
                      %(len(isExecuteColumn) - 1,requiredModuleNum,successfulModuleNum))
-        logging.debug(u"程序异常,请检查代码是否编写正确: \n%s" %traceback.format_exc() + "\n")
-        # close_browser()
+
+
+        if "chrome not reachable" in traceback.format_exc():
+            logging.debug(u"程序异常,已手动终止程序: \n%s" % traceback.format_exc() + "\n")
+            os._exit(0)
+        else:
+            logging.debug(u"程序异常,请检查代码是否编写正确: \n%s" % traceback.format_exc() + "\n")
