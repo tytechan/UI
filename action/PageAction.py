@@ -32,8 +32,9 @@ waitUtil = None
 【关键字分类】
 1、浏览器操作:open_browser、visit_url、close_browser、close_page、switch_to_frame、switch_to_default_content、
             maximize_browser、switch_to_now_window、refresh_page、scroll_slide_field；
-2、常规操作：clear、specObjClear、click_Obj、click_SpecObj、sendkeys_To_Obj、sendkeys_To_SpecObj、
-            SelectValues、xpath_combination_click、capture_screen（setValueByTextAside、selectValueByTextAside,capture_screen_old）；
+2、常规操作：clear、specObjClear、click_Obj、click_SpecObj、sendkeys_To_Obj、sendkeys_To_SpecObj、SelectValues、
+    xpath_combination_click、xpath_combination_click_loop、xpath_combination_send_keys、xpath_combination_click_send_keys_loop
+    capture_screen（setValueByTextAside、selectValueByTextAside,capture_screen_old）；
 3、辅助定位：highlightElement、highlightElements、whichIsEnabled、whichIsDisplayed；
 4、获取信息：getTitle、getPageSource、getAttribute、getDate_Now；
 5、断言及判断：assert_string_in_pagesourse、assert_title、assert_list；
@@ -215,6 +216,52 @@ def xpath_combination_click(attributeType, locatorExpression, attributeValue, *a
             combination = combination_left + '[@' + attributeType +'="' + attributeValue + '"]' + combination_right
         element = findElebyMethod(driver, 'xpath', combination)
         element.click()
+    except Exception as e:
+        raise e
+
+def xpath_combination_click_loop(attributeType, locatorExpression, attributeValues, *arg):
+    # 操作值格式:属性值|属性值|属性值... 根据属性值数量，循环点击操作
+    # 将“属性值”与“元素定位表达式”拼接到一起组成完整表达式定位元素
+    # 将“属性值”放入“元素定位表达式”的“[]”的指定属性中，由xpath定位元素后，并执行点击操作
+    try:
+        loop_time = attributeValues.count("|") + 1
+        attributeValue = attributeValues.split("|")
+        # 循环
+        for i in range(loop_time):
+            xpath_combination_click(attributeType, locatorExpression, attributeValue[i])
+    except Exception as e:
+        raise e
+
+def xpath_combination_send_keys(attributeType, locatorExpression, attributeValue_sendValue, *arg):
+    # 操作值格式：属性值|输入值
+    # 将“属性值”与“元素定位表达式”拼接到一起组成完整表达式定位元素
+    # 将“属性值”放入“元素定位表达式”的“[]”的指定属性中，由xpath定位元素后，并执行输入操作
+    try:
+        attributeValue = attributeValue_sendValue.split("|")[0]
+        sendValue = attributeValue_sendValue.split("|")[1]
+        # 拼接出指定Xpath
+        combination_left = locatorExpression.split("[]")[0]
+        combination_right = locatorExpression.split("[]")[1]
+        if attributeType == "text()":
+            combination = combination_left + '[' + attributeType +'="' + attributeValue + '"]' + combination_right
+        else:
+            combination = combination_left + '[@' + attributeType +'="' + attributeValue + '"]' + combination_right
+        # 依据拼接的Xpath，查找指定元素
+        element = findElebyMethod(driver, 'xpath', combination)
+        element.send_keys(sendValue)
+    except Exception as e:
+        raise e
+
+def xpath_combination_send_keys_loop(attributeType, locatorExpression, attributeValues_sendValues, *arg):
+    # 操作值格式：属性值|输入值[]属性值|输入值... 根据属性值数量，循环输入操作
+    # 将“属性值”与“元素定位表达式”拼接到一起组成完整表达式定位元素
+    # 将“属性值”放入“元素定位表达式”的“[]”的指定属性中，由xpath定位元素后，并执行输入操作
+    try:
+        loop_time = attributeValues_sendValues.count("[]") + 1
+        attributeValue_sendValue = attributeValues_sendValues.split("[]")
+        # 循环
+        for i in range(loop_time):
+            xpath_combination_send_keys(attributeType, locatorExpression, attributeValue_sendValue[i])
     except Exception as e:
         raise e
 
