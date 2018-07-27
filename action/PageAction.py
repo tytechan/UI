@@ -470,13 +470,13 @@ def press_key(mykey,*arg):        #模拟单按键，如： "tab"、"enter"
 
 # ****************************************等待****************************************
 
-def loadPage(*arg):     # 设置页面加载时间
+def loadPage(loop_time=10,*arg):     # 设置页面加载时间
     global driver
     try:
         sleep(0.5)
         driver.set_page_load_timeout(10)
         # 等待加载动图消失
-        wait_elements_vanish('xpath','//div[@id="loading" and contains(@style,"display: block;")]')
+        wait_elements_vanish('xpath','//div[@id="loading" and contains(@style,"display: block;")]',loop_time)
     except TimeoutError as e:
         print("********** 等待页面加载超时 **********")
         raise TimeoutError(e)
@@ -515,11 +515,11 @@ def waitVisibilityOfElementLocated(locationType,locatorExpression,*arg):
     except Exception as e:
         raise e
 
-def wait_elements_vanish(locationType,locatorExpression,*arg):
+def wait_elements_vanish(locationType,locatorExpression,loop_time=10,*arg):
     # 等待指定元素从页面中消失后，再进行下一步
     global driver
     driver.implicitly_wait(0)
-    for i in range(10):
+    for i in range(int(loop_time)):
         try:
             time.sleep(1)
             elements = driver.find_elements(by = locationType, value = locatorExpression)
