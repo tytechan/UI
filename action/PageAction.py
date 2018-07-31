@@ -804,7 +804,8 @@ def setDataByJS(locationType,locatorExpression,inputContent):       # 通过js�
         element = findEleByDetail(driver,locationType,locatorExpression)
         removeAttribute(driver,element,"readonly")
         element.clear()
-        element.send_keys(inputContent)
+        input_time = inputContent.split(" ")[0]
+        element.send_keys(input_time)
     except Exception as e:
         pass
 
