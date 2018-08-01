@@ -45,7 +45,8 @@ waitUtil = None
 9、外部程序调用：runProcessFile、page_upload_file（uploadFile_x1、uploadFile_x2）；
 10、字符串操作：randomNum、pinyinTransform、compose_JSON；
 11、带判断关键字：ifExistThenClick、ifExistThenSendkeys、BoxHandler、ifExistThenSelect、ifExistThenSetData、ifExistThenReturnAttribute_pinyin、
-    ifExistThenReturnOperateValue、ifExistThenChooseOperateValue、ifExistThenChooseOperateValue_diffPosition
+    ifExistThenReturnOperateValue、ifExistThenChooseOperateValue、ifExistThenChooseOperateValue_diffPosition、
+    ifExistThenPass_xpath_combination
 12、JS相关：setDataByJS；
 13、项目关键字：销售合同新增+审批：finalBoxClick、ifDoubleMsg（writeContracNum）
                项目关键字：采购模块：checkApprover
@@ -796,6 +797,25 @@ def ifExistThenChooseOperateValue_diffPosition(locationType, locatorExpression, 
             return exist_return_value
     except Exception as e:
         return not_exist_return_value
+
+def ifExistThenPass_xpath_combination(attributeType, locatorExpression, attributeValue, *arg):
+    # 将“操作值”与“元素定位表达式”拼接到一起组成完整表达式定位元素
+    # 将“操作值”放入“元素定位表达式”的“[]”的指定属性值中，由xpath定位元素是否存在，存在则通过，不存在则报错
+    global driver
+    try:
+        driver.implicitly_wait(1)
+        # 拼接Xpath
+        combination_left = locatorExpression.split("[]")[0]
+        combination_right = locatorExpression.split("[]")[1]
+        if attributeType == "text()":
+            combination = combination_left + '[' + attributeType +'="' + attributeValue + '"]' + combination_right
+        else:
+            combination = combination_left + '[@' + attributeType +'="' + attributeValue + '"]' + combination_right
+        # 由xpath定位元素是否存在
+        element = WebDriverWait(driver, 1).until(lambda x: x.find_element(by='xpath', value=combination))
+        assert element
+    except Exception as e:
+        raise e
 
 # ****************************************JS相关****************************************
 
