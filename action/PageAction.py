@@ -79,7 +79,16 @@ def open_browser(browserName,*arg):        #打开浏览器
 def visit_url(url,*arg):        #访问某个网址
     global driver
     try:
-        driver.get(url)
+        if url == u'200':
+            driver.get('http://kdevelop.chinacloudapp.cn:9002/login.html')
+        elif url == u'500':
+            driver.get('http://kintergration.chinacloudapp.cn:9002/login.html')
+        elif url == u'700':
+            driver.get('http://kdevelop.chinacloudapp.cn:9003/login.html')
+        elif url == u'810':
+            driver.get('http://d58d71fb-74bb-470d-b173-a2f6ca23f9c2.chinacloudapp.cn')
+        else:
+            driver.get(url)
     except Exception as e:
         raise e
 
