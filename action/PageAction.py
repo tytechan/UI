@@ -33,8 +33,8 @@ waitUtil = None
 1、浏览器操作:open_browser、visit_url、close_browser、close_page、switch_to_frame、switch_to_default_content、
             maximize_browser、switch_to_now_window、refresh_page、scroll_slide_field；
 2、常规操作：clear、specObjClear、click_Obj、click_SpecObj、sendkeys_To_Obj、sendkeys_To_SpecObj、SelectValues、
-    xpath_combination_click、xpath_combination_click_loop、xpath_combination_send_keys、xpath_combination_click_send_keys_loop
-    capture_screen（setValueByTextAside、selectValueByTextAside,capture_screen_old）；
+    xpath_combination_click、xpath_combination_click_loop、xpath_combination_send_keys、xpath_combination_click_send_keys_loop、
+    menu_select、capture_screen（setValueByTextAside、selectValueByTextAside,capture_screen_old）；
 3、辅助定位：highlightElement、highlightElements、whichIsEnabled、whichIsDisplayed；
 4、获取信息：getTitle、getPageSource、getAttribute、getDate_Now；
 5、断言及判断：assert_string_in_pagesourse、assert_title、assert_list；
@@ -272,6 +272,36 @@ def xpath_combination_send_keys_loop(attributeType, locatorExpression, attribute
         # 循环
         for i in range(loop_time):
             xpath_combination_send_keys(attributeType, locatorExpression, attributeValue_sendValue[i])
+    except Exception as e:
+        raise e
+
+def menu_select(menu_text,*arg):
+    # 操作值格式：模块名称|菜单名称|菜单选项
+    # 打开此菜单页面
+    try:
+        select_time = menu_text.count("|")
+        menu_operation = menu_text.split("|")
+        # 判断
+        if select_time == 1:
+            # 鼠标移动到模块名称上
+            xpath_1 = '//ul[@class="navlist"]/li/a[contains(text(),"' + menu_operation[0] + '")]'
+            moveToElement('xpath', xpath_1)
+            sleep(0.5)
+            # 鼠标点击菜单名称
+            xpath_2 = '//ul[contains(@class,"hasSubMore")]/li/a[text()="' + menu_operation[1] + '"]'
+            click_Obj('xpath', xpath_2)
+        elif select_time == 2:
+            # 鼠标移动到模块名称上
+            xpath_1 = '//ul[@class="navlist"]/li/a[contains(text(),"' + menu_operation[0] + '")]'
+            moveToElement('xpath', xpath_1)
+            sleep(0.5)
+            # 鼠标移动到菜单名称上
+            xpath_2 = '//ul[contains(@class,"hasSubMore")]/li/a[text()="' + menu_operation[1] + '"]'
+            moveToElement('xpath', xpath_2)
+            sleep(0.5)
+            # 鼠标点击菜单名称
+            xpath_3 = '//ul[contains(@class,"subnavlist2")]/li/a[text()="' + menu_operation[2] + '"]'
+            click_Obj('xpath', xpath_3)
     except Exception as e:
         raise e
 
