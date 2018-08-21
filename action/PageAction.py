@@ -288,7 +288,7 @@ def menu_select(menu_text,*arg):
             moveToElement('xpath', xpath_1)
             sleep(0.5)
             # 鼠标点击菜单名称
-            xpath_2 = '//ul[contains(@class,"hasSubMore")]/li/a[text()="' + menu_operation[1] + '"]'
+            xpath_2 = '//ul[contains(@class,"subnavlist ")]/li/a[text()="' + menu_operation[1] + '"]'
             click_Obj('xpath', xpath_2)
         elif select_time == 2:
             # 鼠标移动到模块名称上
@@ -296,7 +296,7 @@ def menu_select(menu_text,*arg):
             moveToElement('xpath', xpath_1)
             sleep(0.5)
             # 鼠标移动到菜单名称上
-            xpath_2 = '//ul[contains(@class,"hasSubMore")]/li/a[text()="' + menu_operation[1] + '"]'
+            xpath_2 = '//ul[contains(@class,"subnavlist ")]/li/a[text()="' + menu_operation[1] + '"]'
             moveToElement('xpath', xpath_2)
             sleep(0.5)
             # 鼠标点击菜单名称
