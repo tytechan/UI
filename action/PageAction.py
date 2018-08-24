@@ -34,7 +34,8 @@ waitUtil = None
             maximize_browser、switch_to_now_window、refresh_page、scroll_slide_field；
 2、常规操作：clear、specObjClear、click_Obj、click_SpecObj、sendkeys_To_Obj、sendkeys_To_SpecObj、SelectValues、
     xpath_combination_click、xpath_combination_click_loop、xpath_combination_send_keys、xpath_combination_click_send_keys_loop、
-    menu_select、capture_screen（setValueByTextAside、selectValueByTextAside,capture_screen_old）；
+    xpath_combination_send_keys_click_loop、menu_select、
+    capture_screen（setValueByTextAside、selectValueByTextAside,capture_screen_old）；
 3、辅助定位：highlightElement、highlightElements、whichIsEnabled、whichIsDisplayed；
 4、获取信息：getTitle、getPageSource、getAttribute、getDate_Now；
 5、断言及判断：assert_string_in_pagesourse、assert_title、assert_list；
