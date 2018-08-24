@@ -224,21 +224,29 @@ def xpath_combination_click(attributeType, locatorExpression, attributeValue, *a
             combination = combination_left + '[' + attributeType +'="' + attributeValue + '"]' + combination_right
         else:
             combination = combination_left + '[@' + attributeType +'="' + attributeValue + '"]' + combination_right
-        element = findElebyMethod(driver, 'xpath', combination)
-        element.click()
+        click_Obj('xpath', combination)
     except Exception as e:
         raise e
 
 def xpath_combination_click_loop(attributeType, locatorExpression, attributeValues, *arg):
-    # 操作值格式:属性值|属性值|属性值... 根据属性值数量，循环点击操作
+    # 操作值格式:属性值|属性值|属性值... 根据属性值数量，循环点击操作，英文逗号也可做分隔符（不常用）
     # 将“属性值”与“元素定位表达式”拼接到一起组成完整表达式定位元素
     # 将“属性值”放入“元素定位表达式”的“[]”的指定属性中，由xpath定位元素后，并执行点击操作
     try:
-        loop_time = attributeValues.count("|") + 1
-        attributeValue = attributeValues.split("|")
-        # 循环
-        for i in range(loop_time):
-            xpath_combination_click(attributeType, locatorExpression, attributeValue[i])
+        # '|'作为分隔符
+        if '|' in attributeValues:
+            loop_time = attributeValues.count("|") + 1
+            attributeValue = attributeValues.split("|")
+            # 循环
+            for i in range(loop_time):
+                xpath_combination_click(attributeType, locatorExpression, attributeValue[i])
+        # ','作为分隔符
+        elif ',' in attributeValues:
+            loop_time = attributeValues.count(",") + 1
+            attributeValue = attributeValues.split(",")
+            # 循环
+            for i in range(loop_time):
+                xpath_combination_click(attributeType, locatorExpression, attributeValue[i])
     except Exception as e:
         raise e
 
@@ -256,9 +264,8 @@ def xpath_combination_send_keys(attributeType, locatorExpression, attributeValue
             combination = combination_left + '[' + attributeType +'="' + attributeValue + '"]' + combination_right
         else:
             combination = combination_left + '[@' + attributeType +'="' + attributeValue + '"]' + combination_right
-        # 依据拼接的Xpath，查找指定元素
-        element = findElebyMethod(driver, 'xpath', combination)
-        element.send_keys(sendValue)
+        # 依据拼接的Xpath，查找指定元素，执行输入操作
+        sendkeys_To_Obj('xpath', combination, sendValue)
     except Exception as e:
         raise e
 
@@ -272,6 +279,42 @@ def xpath_combination_send_keys_loop(attributeType, locatorExpression, attribute
         # 循环
         for i in range(loop_time):
             xpath_combination_send_keys(attributeType, locatorExpression, attributeValue_sendValue[i])
+    except Exception as e:
+        raise e
+
+def xpath_combination_send_keys_click_loop(attributeType, locatorExpression, attributeValues_sendValues, *arg):
+    # 操作值格式：属性值|输入值[]属性值|输入值... 根据属性值数量，循环输入操作、点击操作
+    # 将“属性值”与“元素定位表达式”拼接到一起组成完整表达式定位元素
+    # 将“属性值”放入“元素定位表达式”的“[]”的指定属性中，由xpath定位元素后，并执行输入操作、点击操作
+    try:
+        # 操作值处理
+        attributeValues_click = ''
+        attributeValues_sendValues_send_keys = ''
+        attributeValue_sendValue_array = attributeValues_sendValues.split("[]")
+        # json格式：{物料内部编码[i]: 数量[i]}
+        JSON_A = {}
+        for i in range(len(attributeValue_sendValue_array)):
+            JSON_k = attributeValue_sendValue_array[i].split("|")[0]
+            JSON_v = attributeValue_sendValue_array[i].split("|")[1]
+            JSON_A[JSON_k] = JSON_v
+        # 输入操作值
+        for i in range(len(attributeValue_sendValue_array)):
+            if attributeValue_sendValue_array[i].endswith('|'):
+                continue
+            attributeValues_sendValues_send_keys = attributeValues_sendValues_send_keys + '[]' + attributeValue_sendValue_array[i]
+        attributeValues_sendValues_send_keys = attributeValues_sendValues_send_keys[2:]
+        # 点击操作值
+        for (k, v) in JSON_A.items():
+            attributeValues_click = attributeValues_click + '|' + k
+        attributeValues_click = attributeValues_click[1:]
+        # 定位表达式处理
+        # 例：表达式为//td[text()="02230HBV-F30"]/../td[1]/span/../..//input[contains(@name,"referenceCount")]
+        # 结果为//td[text()="02230HBV-F30"]/../td[1]/span
+        str_position = locatorExpression.rindex('/../../')
+        locatorExpression_click = locatorExpression[:str_position]
+        # 调用循环函数
+        xpath_combination_send_keys_loop(attributeType, locatorExpression, attributeValues_sendValues_send_keys)
+        xpath_combination_click_loop(attributeType, locatorExpression_click, attributeValues_click)
     except Exception as e:
         raise e
 
