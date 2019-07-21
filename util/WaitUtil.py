@@ -32,9 +32,11 @@ class WaitUtil(object):
         :param args:
         :return: 页面元素对象
         '''
+        errInfo = "未找到 '%s' 为 '%s' 的元素！" %(locatorMethod, locatorExpression)
         try:
             if locatorMethod.lower() in self.locationTyoeDict:
-                element = self.wait.until(EC.presence_of_element_located((self.locationTyoeDict[locatorMethod.lower()],locatorExpression)))
+                element = self.wait.until(
+                    EC.presence_of_element_located((self.locationTyoeDict[locatorMethod.lower()],locatorExpression)), errInfo)
                 return element
             else:
                 raise TypeError(u'未找到定位方式，请确认定位方法使用是否正确')
@@ -49,11 +51,12 @@ class WaitUtil(object):
         :param args:
         :return: None
         '''
+        errInfo = "未找到 '%s' 为 '%s' 的元素！" %(locationType, locationExpression)
         try:
             el = self.wait.until(EC.visibility_of_element_located((self.locationTyoeDict[locationType.lower()],
-                                                                   locationExpression)))
+                                                                   locationExpression)), errInfo)
             print('********** 元素是否可操作：',el.is_enabled()," **********")
-            sleep(1)
+            sleep(0.5)
             # return el
         except Exception as e:
             raise e
@@ -66,8 +69,10 @@ class WaitUtil(object):
         :param args:
         :return: None
         '''
+        errInfo = "未找到 '%s' 为 '%s' 的元素！" %(locationType, locationExpression)
         try:
-            self.wait.until(EC.frame_to_be_available_and_switch_to_it((self.locationTyoeDict[locationType.lower()],locationExpression)))
+            self.wait.until(
+                EC.frame_to_be_available_and_switch_to_it((self.locationTyoeDict[locationType.lower()],locationExpression)), errInfo)
         except Exception as e:
             # 抛出异常给上层调用者
             raise e

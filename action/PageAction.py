@@ -20,7 +20,7 @@ from . import *
 
 
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.firefox.options import Options
+# from selenium.webdriver.firefox.options import Options
 
 # 定义全局driver变量
 driver = None
@@ -30,28 +30,72 @@ waitUtil = None
 
 '''
 【关键字分类】
+[报错类]
+CNBMError（class）、CNBMException.
+
+[KER]
 1、浏览器操作:open_browser、visit_url、close_browser、close_page、switch_to_frame、switch_to_default_content、
             maximize_browser、switch_to_now_window、refresh_page、scroll_slide_field；
-2、常规操作：clear、specObjClear、click_Obj、click_SpecObj、sendkeys_To_Obj、sendkeys_To_SpecObj、SelectValues、
+2、常规操作：clear、specObjClear、click_Obj、click_SpecObj、sendkeys_To_Obj、sendkeys_To_SpecObj、sendkeys_to_elements、SelectValues、
     xpath_combination_click、xpath_combination_click_loop、xpath_combination_send_keys、xpath_combination_click_send_keys_loop、
     xpath_combination_send_keys_click_loop、menu_select、
     capture_screen（setValueByTextAside、selectValueByTextAside,capture_screen_old）；
 3、辅助定位：highlightElement、highlightElements、whichIsEnabled、whichIsDisplayed；
-4、获取信息：getTitle、getPageSource、getAttribute、getDate_Now；
+4、获取信息：getTitle、getPageSource、getAttribute、getDate_Now、getDateCalcuated、getTextInTable；
 5、断言及判断：assert_string_in_pagesourse、assert_title、assert_list；
 6、剪贴板操作：paste_string、press_key；
 7、等待：loadPage、sleep、waitPresenceOfElementLocated、waitVisibilityOfElementLocated、wait_elements_vanish
         waitFrameToBeAvailableAndSwitchToIt；
-8、鼠标键盘模拟：moveToElement、init_Mouse、pageKeySimulate；
-9、外部程序调用：runProcessFile、page_upload_file（uploadFile_x1、uploadFile_x2）；
+8、鼠标键盘模拟：moveToElement、init_Mouse、pageKeySimulate、get_clipboard_return；
+9、外部程序调用：runProcessFile、page_upload_file；
 10、字符串操作：randomNum、pinyinTransform、compose_JSON；
 11、带判断关键字：ifExistThenClick、ifExistThenSendkeys、BoxHandler、ifExistThenSelect、ifExistThenSetData、ifExistThenReturnAttribute_pinyin、
     ifExistThenReturnOperateValue、ifExistThenChooseOperateValue、ifExistThenChooseOperateValue_diffPosition、
     ifExistThenPass_xpath_combination
 12、JS相关：setDataByJS；
 13、项目关键字：销售合同新增+审批：finalBoxClick、ifDoubleMsg（writeContracNum）
-               项目关键字：采购模块：checkApprover
+                采购模块：checkApprover；
+                财务管理模块：getHidenInfo、getInfoWanted、getNextUser（适用于所有审批）、setAmountOfPayment、
+                            ifExist_pageKeySimulate；
+                进出口合同模块：getNumWanted；
+                日常办公：getInfoNeeded;
+                组合功能：getApprovalFlow、loginProcess；
+                
+[SAP]
+1、基础配置：createObject、saplogin、updateActiveWindow、closeSAP、createNewSession、closeAllSession；
+2、基本操作：performById、、getObj、getText、getNumInText；
+3、等待及校验：waitObj、waitUntil、checkText；
+4、项目关键字：
+        采购申请：chooseToReturn、chooseHowToTrans；
 '''
+
+
+
+# ****************************************浏览器操作****************************************
+class CNBMError(Exception):
+    def __init__(self,ErrorInfo):
+        super().__init__(self) #初始化父类
+        self.errorinfo=ErrorInfo
+
+    def __str__(self):
+        return self.errorinfo
+
+def SAPException(func):
+    def wrapper(*args, **kwargs):
+        try:
+            try:
+                return func(*args, **kwargs)
+            except Exception as e:
+                # closeSAP()            # 关闭所有打开的sap进程
+                # closeAllSession()       # 关闭本流程的所有sap进程
+                funcName = func.__name__
+                errInfo = "\n[关键字] " + funcName \
+                          + "\n[异常信息] %s" %repr(e)
+                raise CNBMError(errInfo)
+        except CNBMError as err:
+            raise err
+    return wrapper
+
 # ****************************************浏览器操作****************************************
 
 def open_browser(browserName,*arg):        #打开浏览器
@@ -60,16 +104,13 @@ def open_browser(browserName,*arg):        #打开浏览器
         if browserName.lower() == 'ie':
             driver = webdriver.Ie()
         elif browserName.lower() == 'chrome':
-            # # 创建chrome浏览器的一个options实例对象
-            # chrome_options = Options()
-            # # 添加屏蔽--ignore--certificate-errors提示信息的设置参数项
-            # chrome_options.add_experimental_option(
-            #     "excludeSwitches",
-            #     ["ignore-certificate-errors"]
-            # )
-            # driver = webdriver.Chrome(executable_path = chromeDriverFilePath,chrome_options = chrome_options)
-
-            driver = webdriver.Chrome()
+            chrome_options = webdriver.ChromeOptions()
+            # 用于控制进程是否在后台执行
+            # chrome_options.add_argument('--headless')
+            # chrome_options.add_argument('--disable-gpu')
+            driver = webdriver.Chrome(chrome_options=chrome_options)
+        elif browserName.lower() == 'edge':
+            driver = webdriver.Edge()
         else:
             driver = webdriver.Firefox()
         # driver对象创建成功，创建等待类实例对象
@@ -81,13 +122,30 @@ def visit_url(url,*arg):        #访问某个网址
     global driver
     try:
         if url == u'200':
-            driver.get('http://kdevelop.chinacloudapp.cn:9002/login.html')
+            driver.get('http://cdwpdev01.chinacloudapp.cn:9001/login.html')
+        elif url == u'400':
+            driver.get('http://cdwpdev01.chinacloudapp.cn:9004/login.html')
+        elif url == u'450':
+            driver.get('http://cdwpdev01.chinacloudapp.cn:9003/login.html')
         elif url == u'500':
             driver.get('http://kintergration.chinacloudapp.cn:9002/login.html')
+        elif url == u'510':
+            driver.get('http://kintergration01.chinacloudapp.cn:9510/login.html')
+        elif url == u'520':
+            driver.get('http://kintergration01.chinacloudapp.cn:9520/login.html')
+        elif url == u'530':
+            driver.get('http://kintergration01.chinacloudapp.cn:9530/#/as/login')
+        elif url == u'540':
+            driver.get('http://kintergration01.chinacloudapp.cn:9540/#/as/login')
+        elif url == u'600':
+            driver.get('http://kintergration.chinacloudapp.cn:9003/login.html')
         elif url == u'700':
             driver.get('http://kdevelop.chinacloudapp.cn:9003/login.html')
         elif url == u'810':
-            driver.get('http://d58d71fb-74bb-470d-b173-a2f6ca23f9c2.chinacloudapp.cn')
+            driver.get('http://pre-mongodb-01.chinacloudapp.cn:9003/login.html')
+        elif url == u'800':
+            # 线上
+            driver.get('http://cdwp.cnbmxinyun.com/login.html')
         else:
             driver.get(url)
     except Exception as e:
@@ -96,7 +154,9 @@ def visit_url(url,*arg):        #访问某个网址
 def close_browser(*arg):        #关闭浏览器
     global driver
     try:
-        driver.quit()
+        if driver:
+            driver.quit()
+            driver = None
     except Exception as e:
         raise e
 
@@ -123,7 +183,7 @@ def maximize_browser():     #窗口最大化
     except Exception as e:
         raise e
 
-def switch_to_now_window(handlesNum,*arg):      #切换进入frame
+def switch_to_now_window(handlesNum=0,*arg):      #切换进入frame
     global driver
     try:
         handlesNum = int(handlesNum)
@@ -148,12 +208,27 @@ def refresh_page(*arg):        #刷新网页
     except Exception as e:
         raise e
 
-# 滚动条上下移动，拖动到可见的元素去
-def scroll_slide_field(locationType, locatorExpression, *arg):
+# 滚动条上下移动，滑动到可见的元素，并将其置顶，若操作值填down，则置于底部
+def scroll_slide_field(locationType, locatorExpression, position="up", *arg):
     global driver
     try:
         element = findElebyMethod(driver, locationType, locatorExpression)
-        driver.execute_script("arguments[0].scrollIntoView();", element)  # 拖动到可见的元素去
+        if position == "up":
+            driver.execute_script("arguments[0].scrollIntoView();", element)  # 滑动到可见的元素，并将其置顶
+        elif position == "down":
+            driver.execute_script("arguments[0].scrollIntoView(false);", element)  # 滑动到可见的元素，并将其置底
+    except Exception as e:
+        raise e
+
+def scroll_into_field(locationNum="0|0", *arg):
+    global driver
+    # 将浏览器页面滚动到指定位置，在操作值中输入横纵坐标数值，操作值输入格式：x|y
+    try:
+        x = locationNum.split("|")[0]
+        y = locationNum.split("|")[1]
+        execute_string = "scrollTo(%s,%s);" %(x,y)
+        driver.execute_script(execute_string)
+        sleep(1.5)
     except Exception as e:
         raise e
 
@@ -161,70 +236,150 @@ def scroll_slide_field(locationType, locatorExpression, *arg):
 
 def clear(locationType,locatorExpression,*arg):     #清除输入框默认内容
     global driver
+    flag = False
     try:
-        findEleByDetail(driver,locationType,locatorExpression).clear()
+        el_init = findEleByDetail(driver,locationType,locatorExpression)
+        flag = True
+        el_init.clear()
     except Exception as e:
+        if flag:
+            # 找到元素，但后续失败时，可通过截图查看报错高亮元素
+            highlight(driver, el_init)
         raise e
 
 def sendkeys_To_Obj(locationType,locatorExpression,inputContent):      #输入框输值
     global driver
+    flag = False
     try:
         element = findEleByDetail(driver,locationType,locatorExpression)
+        flag = True
         element.clear()
         element.send_keys(inputContent)
     except Exception as e:
+        if flag:
+            # 找到元素，但后续失败时，可通过截图查看报错高亮元素
+            highlight(driver, element)
         raise e
 
 def click_Obj(locationType, locatorExpression, *arg):       #点击页面元素
     global driver
+    flag = False
     try:
-        findEleByDetail(driver, locationType, locatorExpression).click()
+        element = findEleByDetail(driver, locationType, locatorExpression)
+        flag = True
+        element.click()
     except Exception as e:
+        if flag:
+            # 找到元素，但后续失败时，可通过截图查看报错高亮元素
+            highlight(driver, element)
         raise e
 
 # 针对partial_link_text、link_text、css_selector报错Unsupported locator strategy封装单独关键字
 
 def specObjClear(locationType,locatorExpression,*arg):     #清除输入框默认内容，暂时弃用
     global driver
+    flag = False
     try:
-        findElebyMethod(driver,locationType,locatorExpression).clear()
+        element = findElebyMethod(driver,locationType,locatorExpression)
+        flag = True
+        element.clear()
     except Exception as e:
+        if flag:
+            # 找到元素，但后续失败时，可通过截图查看报错高亮元素
+            highlight(driver, element)
         raise e
 
 def sendkeys_To_SpecObj(locationType,locatorExpression,inputContent):      #输入框输值
     global driver
+    flag = False
     try:
         element = findElebyMethod(driver,locationType,locatorExpression)
+        flag = True
         element.clear()
         element.send_keys(inputContent)
     except Exception as e:
+        if flag:
+            # 找到元素，但后续失败时，可通过截图查看报错高亮元素
+            highlight(driver, element)
+        raise e
+
+def sendkeys_to_elements(locationType,locatorExpression,inputContent):
+    # 查找多个元素，并向查找到的所有输入框中输入操作值。
+    # 操作值可用“|”作为分隔符，将多个值依照查找顺序填入多个输入框中
+    # 若操作值无分隔符，则所有输入框都输入同一操作值
+    global driver
+    flag = False
+    try:
+        elements = findElesbyMethod(driver, locationType, locatorExpression)
+        flag = True
+        if "|" in inputContent:
+            inputArray = inputContent.split("|")
+            loop_time = inputContent.count("|") + 1
+            for i in range(loop_time):
+                elements[i].clear()
+                elements[i].send_keys(inputArray[i])
+        else:
+            for ele in elements:
+                ele.clear()
+                ele.send_keys(inputContent)
+    except Exception as e:
+        if flag:
+            # 找到元素，但后续失败时，可通过截图查看报错高亮元素
+            highlightElements(driver, locationType, locatorExpression)
         raise e
 
 def click_SpecObj(locationType, locatorExpression, *arg):       #点击页面元素
     global driver
+    flag = False
     try:
-        findElebyMethod(driver, locationType, locatorExpression).click()
+        element = findElebyMethod(driver, locationType, locatorExpression)
+        flag = True
+        element.click()
     except Exception as e:
+        if flag:
+            # 找到元素，但后续失败时，可通过截图查看报错高亮元素
+            highlight(driver, element)
         raise e
 
 def SelectValues(locationType,locatorExpression,inputContent):      #输入框输值
     global driver
+    flag = False
     try:
-        el = Select(findEleByDetail(driver,locationType,locatorExpression))
+        el_init = findEleByDetail(driver,locationType,locatorExpression)
+        flag = True
+        el = Select(el_init)
         el.select_by_visible_text(inputContent)
     except Exception as e:
+        if flag:
+            # 找到元素，但后续失败时，可通过截图查看报错高亮元素
+            highlight(driver, el_init)
         raise e
 
 def xpath_combination_click(attributeType, locatorExpression, attributeValue, *arg):
     # 将“操作值”与“元素定位表达式”拼接到一起组成完整表达式定位元素
     # 将“操作值”放入“元素定位表达式”的“[]”的指定属性值中，由xpath定位元素后，并执行点击操作
+    # “元素定位方式”中填入HTML属性，如text()、id、class，以“starts-with(”开头是xpath里starts-with()的意思
+    '''
+    例：元素定位方式：starts-with(text()
+    元素定位表达式：//*[]/../td[4]/input
+    操作值：6%
+    得出的Xpath：//*[starts-with(text(),"6%")]/../td[4]/input
+    '''
     try:
         combination_left = locatorExpression.split("[]")[0]
         combination_right = locatorExpression.split("[]")[1]
-        if attributeType == "text()":
+
+        if attributeType.startswith("starts-with("):
+            attributeType = attributeType[12:]
+            if attributeType == "text()":
+                combination = combination_left + '[starts-with(' + attributeType + ',"' + attributeValue + '")]' + combination_right
+            else:
+                combination = combination_left + '[starts-with(@' + attributeType + ',"' + attributeValue + '")]' + combination_right
+        elif attributeType == "text()":
             combination = combination_left + '[' + attributeType +'="' + attributeValue + '"]' + combination_right
         else:
             combination = combination_left + '[@' + attributeType +'="' + attributeValue + '"]' + combination_right
+        highlightElement('xpath', combination)
         click_Obj('xpath', combination)
     except Exception as e:
         raise e
@@ -248,6 +403,8 @@ def xpath_combination_click_loop(attributeType, locatorExpression, attributeValu
             # 循环
             for i in range(loop_time):
                 xpath_combination_click(attributeType, locatorExpression, attributeValue[i])
+        else:
+            xpath_combination_click(attributeType, locatorExpression, attributeValues)
     except Exception as e:
         raise e
 
@@ -255,13 +412,28 @@ def xpath_combination_send_keys(attributeType, locatorExpression, attributeValue
     # 操作值格式：属性值|输入值
     # 将“属性值”与“元素定位表达式”拼接到一起组成完整表达式定位元素
     # 将“属性值”放入“元素定位表达式”的“[]”的指定属性中，由xpath定位元素后，并执行输入操作
+    # “元素定位方式”中填入HTML属性，如text()、id、class，以“starts-with(”开头是xpath里starts-with()的意思
+    '''
+    例：元素定位方式：starts-with(text()
+    元素定位表达式：//*[]/../td[4]/input
+    操作值：6%|170
+    得出的Xpath：//*[starts-with(text(),"6%")]/../td[4]/input
+    往此Xpath元素中输入：170
+    '''
     try:
         attributeValue = attributeValue_sendValue.split("|")[0]
         sendValue = attributeValue_sendValue.split("|")[1]
         # 拼接出指定Xpath
         combination_left = locatorExpression.split("[]")[0]
         combination_right = locatorExpression.split("[]")[1]
-        if attributeType == "text()":
+
+        if attributeType.startswith("starts-with("):
+            attributeType = attributeType[12:]
+            if attributeType == "text()":
+                combination = combination_left + '[starts-with(' + attributeType + ',"' + attributeValue + '")]' + combination_right
+            else:
+                combination = combination_left + '[starts-with(@' + attributeType + ',"' + attributeValue + '")]' + combination_right
+        elif attributeType == "text()":
             combination = combination_left + '[' + attributeType +'="' + attributeValue + '"]' + combination_right
         else:
             combination = combination_left + '[@' + attributeType +'="' + attributeValue + '"]' + combination_right
@@ -328,46 +500,57 @@ def menu_select(menu_text,*arg):
         # 判断
         if select_time == 1:
             # 鼠标移动到模块名称上
-            xpath_1 = '//ul[@class="navlist"]/li/a[contains(text(),"' + menu_operation[0] + '")]'
+            xpath_1 = '//span[@class="nav-text" and text()="' + menu_operation[0] + '"]/..'
             moveToElement('xpath', xpath_1)
             sleep(0.5)
             # 鼠标点击菜单名称
-            xpath_2 = '//ul[contains(@class,"subnavlist ")]/li/a[text()="' + menu_operation[1] + '"]'
+            xpath_2 = '//span[@class="nav-text" and text()="' + menu_operation[0] + '"]/../following-sibling::*[1]/li/a/span[text()="' + menu_operation[1] + '"]/..'
             click_Obj('xpath', xpath_2)
         elif select_time == 2:
             # 鼠标移动到模块名称上
-            xpath_1 = '//ul[@class="navlist"]/li/a[contains(text(),"' + menu_operation[0] + '")]'
+            xpath_1 = '//span[@class="nav-text" and text()="' + menu_operation[0] + '"]/..'
             moveToElement('xpath', xpath_1)
             sleep(0.5)
-            # 鼠标移动到菜单名称上
-            xpath_2 = '//ul[contains(@class,"subnavlist ")]/li/a[text()="' + menu_operation[1] + '"]'
-            moveToElement('xpath', xpath_2)
+            # 鼠标点击菜单名称
+            xpath_2 = '//span[@class="nav-text" and text()="' + menu_operation[0] + '"]/../following-sibling::*[1]/li/a/span[text()="' + menu_operation[1] + '"]/..'
+            click_Obj('xpath', xpath_2)
             sleep(0.5)
             # 鼠标点击菜单名称
-            xpath_3 = '//ul[contains(@class,"subnavlist2")]/li/a[text()="' + menu_operation[2] + '"]'
+            xpath_3 = '//span[@class="nav-text" and text()="' + menu_operation[1] + '"]/../following-sibling::*[1]/li/a/span[text()="' + menu_operation[2] + '"]/..'
             click_Obj('xpath', xpath_3)
     except Exception as e:
         raise e
 
 def setValueByTextAside(textAside,inputContent,*arg):       # 根据输入框旁边的字段定位并向输入框输值,待整理参数，TODO
     global driver
+    flag = False
     try:
         # textAside = myInfo.split("|")[0]
         # inputContent = myInfo.split("|")[1]
         element = findEleByDetail(driver, "xpath", "//strong[.="+textAside+"]/following-sibling::input")
+        flag = True
         element.clear()
         element.send_keys(inputContent)
     except Exception as e:
+        if flag:
+            # 找到元素，但后续失败时，可通过截图查看报错高亮元素
+            highlight(driver, element)
         raise e
 
 def selectValueByTextAside(myInfo,*arg):       # 根据输入框旁边的字段定位并向下拉框输值,待整理参数，TODO
     global driver
+    flag = False
     try:
         textAside = myInfo.split("|")[0]
         inputContent = myInfo.split("|")[1]
         element = Select(findEleByDetail(driver, "xpath", "//strong[.="+textAside+"]/following-sibling::select"))
+        flag = True
         element.select_by_visible_text(inputContent)
     except Exception as e:
+        if flag:
+            # 找到元素，但后续失败时，可通过截图查看报错高亮元素
+            # 找到元素，但后续失败时，可通过截图查看报错高亮元素
+            highlight(driver, element)
         raise e
 
 def capture_screen_old(*arg):       #截图，旧，该方法在日期路径下无法区分具体流程的截图
@@ -385,16 +568,27 @@ def capture_screen_old(*arg):       #截图，旧，该方法在日期路径下�
     else:
         return picNameAndPath
 
-def capture_screen(picDir,*arg):       #截图，新，保存截图路径从外部传进来，可在一级目录下添加二级目录
-    global driver
+def capture_screen(picDir, *arg):       #截图，新，保存截图路径从外部传进来，可在一级目录下添加二级目录
+    import win32api, win32con
+    from PIL import ImageGrab
+    global driver, session
     # 获取当前时间，精确到秒
     currentTime = getCurrentTime()
     # 拼接一场图片保存的绝对路径及名称
     picNameAndPath = str(picDir) + "\\" + str(currentTime) + ".png"
     try:
         # 截屏，并保存为本地图片
-        driver.get_screenshot_as_file(picNameAndPath.replace('\\',r'\\'))
-        # print("picNameAndPath 为：",picNameAndPath.replace('\\',r'\\'))
+        if driver:
+            driver.get_screenshot_as_file(picNameAndPath.replace('\\',r'\\'))
+        elif session:
+            ''' 方法一：部分截图 '''
+            # im = ImageGrab.grab()
+            # im.save(picNameAndPath.replace('\\',r'\\'))
+            ''' 方法二：全屏截图 '''
+            win32api.keybd_event(win32con.VK_SNAPSHOT, 0)
+            time.sleep(0.5)
+            im=ImageGrab.grabclipboard()
+            im.save(picNameAndPath.replace('\\',r'\\'))
     except Exception as e:
         raise e
     else:
@@ -477,13 +671,79 @@ def getAttribute(locationType,locatorExpression,attributeType,*arg):        # �
     except Exception as e:
         raise e
 
-
 def getDate_Now(MyStr,*arg):        # 获取指定连接符的当前日期，20180517
     try:
         import datetime
         MyDate = datetime.datetime.now().strftime("%Y"+MyStr+"%m"+MyStr+"%d")
         print('********** 返回日期为：',MyDate,' **********')
         return MyDate
+    except Exception as e:
+        raise e
+
+def getDateCalcuated(MyStr):
+    '''获取运算后的日期（陈卓/20190123）
+    :param dimension: day/month，选择计算的颗粒度
+    :param accuracy: 时间差，可为负
+    :param hyphen: 日期连词符
+    :return:
+    '''
+    try:
+        import datetime
+        from dateutil.relativedelta import relativedelta
+        dimension = MyStr.split("|")[0]
+        accuracy = int(MyStr.split("|")[1])
+        hyphen = MyStr.split("|")[2]
+
+        MyDate = datetime.datetime.today()
+        if dimension == "month":
+            MyDate = MyDate + relativedelta(months=accuracy)
+        if dimension == "day":
+            MyDate = MyDate + datetime.timedelta(days=accuracy)
+        finalDate = MyDate.strftime("%Y"+hyphen+"%m"+hyphen+"%d")
+        print('********** 返回日期为：',finalDate,' **********')
+        return finalDate
+    except Exception as e:
+        raise e
+
+def getTextInTable(locationType, locatorExpression, myInfo):
+    '''从table指定行（a）和指定列（b）获取值
+    :param locationType: 定位table的属性
+    :param locatorExpression: 定位table的属性值
+    :param myInfo: “a|b”（a：行表头；b：列表头）
+    '''
+    global driver
+    try:
+        table = findElebyMethod(driver,locationType,locatorExpression)
+        trList = table.find_elements_by_tag_name("tr")
+        thList = trList[0].find_elements_by_tag_name("th")
+
+        rowText = myInfo.split("|")[0]
+        colText = myInfo.split("|")[1]
+        flag = False
+
+        for i in range(len(thList)):
+            # 确定列
+            if thList[i].text == colText:
+                colNum = i
+                break
+        assert "colNum" in locals().keys(), "table中未找到该列！"
+
+        for row in trList:
+            # 遍历每行，包括表头
+            try:
+                # 确定行
+                assert rowText in row.text
+                flag = True
+            except:
+                continue
+
+            assert flag == True, "table中未找到该行！"
+            tdList = row.find_elements_by_tag_name("td")
+            value = tdList[colNum].text
+            return value
+
+    except AssertionError as e:
+        raise AssertionError(e)
     except Exception as e:
         raise e
 
@@ -535,6 +795,27 @@ def assert_list(locationType, locatorExpression, listStr, *arg):    # 断言判�
         except Exception as e:
             raise e
 
+def calculateToCheck(var):
+    '''计算交易前后回显值是否正确'''
+    try:
+        var_A = float(var.split("|")[0].replace(",",""))
+        var_B = var.split("|")[1]
+        var_C = float(var.split("|")[2].replace(",",""))
+        var_R = float(var.split("|")[3].replace(",",""))
+        errInfo = "交易前后计算输值与预期不符！"
+        if var_B == "+":
+            assert (var_A + var_C) == var_R, errInfo
+        if var_B == "-":
+            assert (var_A - var_C) == var_R, errInfo
+        if var_B == "*":
+            assert (var_A * var_C) == var_R, errInfo
+        if var_B == "/":
+            assert (var_A / var_C) == var_R, errInfo
+    except AssertionError as e:
+        raise AssertionError(e)
+    except Exception as e:
+        raise e
+
 # ****************************************剪贴板操作****************************************
 
 def paste_string(pasteString,*arg):     #模拟 ctrl+v
@@ -551,19 +832,26 @@ def press_key(mykey,*arg):        #模拟单按键，如： "tab"、"enter"
     except Exception as e:
         raise e
 
+def press_twoKey(keyA, keyB):       #模拟单按键，如： "tab"、"enter"
+    try:
+        KeyboardKeys.twoKeys(keyA, keyB)
+    except Exception as e:
+        raise e
+
 
 # ****************************************等待****************************************
 
-def loadPage(loop_time=10,*arg):     # 设置页面加载时间
+def loadPage(loop_time=60):     # 设置页面加载时间
     global driver
     try:
         sleep(0.5)
         driver.set_page_load_timeout(10)
         # 等待加载动图消失
-        wait_elements_vanish('xpath','//div[@id="loading" and contains(@style,"display: block;")]',loop_time)
-    except TimeoutError as e:
+        wait_elements_vanish('xpath', '//div[@id="loading" and contains(@style,"display: block;")]', loop_time)
+        wait_elements_vanish('xpath', '//div[@id="loading"]/img', loop_time)
+    except Exception as e:
         print("********** 等待页面加载超时 **********")
-        raise TimeoutError(e)
+        raise e
 
 def sleep(sleepSeconds,*arg):       #强制等待
     try:
@@ -599,21 +887,24 @@ def waitVisibilityOfElementLocated(locationType,locatorExpression,*arg):
     except Exception as e:
         raise e
 
-def wait_elements_vanish(locationType,locatorExpression,loop_time=10,*arg):
+def wait_elements_vanish(locationType, locatorExpression, loop_time=60):
     # 等待指定元素从页面中消失后，再进行下一步
     global driver
     driver.implicitly_wait(0)
-    for i in range(int(loop_time)):
+    for i in range(100):
         try:
-            time.sleep(1)
+            # time.sleep(1)
             elements = driver.find_elements(by = locationType, value = locatorExpression)
             if not elements or not elements[0].is_displayed():
-                return True
+                return
+
+            assert i <= int(loop_time), "等待其消失的元素存在于页面中超过 %d s！" %int(loop_time)
+            sleep(1)
+        except AssertionError as e:
+            print("等待其消失的元素存在于页面中超过 %d s！" %int(loop_time))
+            raise AssertionError(e)
         except:
-            return True
-    driver.implicitly_wait(1)
-    from selenium.common.exceptions import TimeoutException
-    raise TimeoutException
+            return
 
 def waitFrameToBeAvailableAndSwitchToIt(locationType,locatorExpression,*arg):
     '''
@@ -665,40 +956,31 @@ def pageKeySimulate(locationType,locatorExpression,keyType,*arg):      # 模拟�
             element.send_keys(Keys.LEFT)
         if keyType == "page_right":
             element.send_keys(Keys.RIGHT)
+        if keyType == "page_enter":
+            element.send_keys(Keys.ENTER)
+    except Exception as e:
+        raise e
+
+def get_clipboard_return(locationType, locatorExpression, *arg):
+    # 将输入框中的内容存入剪贴板中，作为函数返回值
+    global driver
+    try:
+        # 点入输入框，并将输入框中的内容存入剪贴板中
+        element = findElebyMethod(driver, locationType, locatorExpression)
+        element.click()
+        sleep(0.5)
+        element.send_keys(Keys.CONTROL,'a')
+        sleep(0.5)
+        element.send_keys(Keys.CONTROL,'c')
+        # 获取剪贴板中的内容，并将其作为返回值
+        clipboard_text = Clipboard.getText()
+        # 将bytes转为str
+        clipboard_text = bytes.decode(clipboard_text)
+        return clipboard_text
     except Exception as e:
         raise e
 
 # ****************************************外部程序调用****************************************
-
-def uploadFile_x1(fileName,*arg):      # 上传文件，文件路径为testData路径（使用失败），TODO
-    global driver
-    try:
-        myPath = parentDirPath + u"\\testData\\" + fileName
-        dialog = win32gui.FindWindow('#32770', u'文件上传')  # 对话框
-        ComboBoxEx32 = win32gui.FindWindowEx(dialog, 0, 'ComboBoxEx32', None)
-        ComboBox = win32gui.FindWindowEx(ComboBoxEx32, 0, 'ComboBox', None)
-        Edit = win32gui.FindWindowEx(ComboBox, 0, 'Edit', None)  # 上面三句依次寻找对象，直到找到输入框Edit对象的句柄
-        button = win32gui.FindWindowEx(dialog, 0, 'Button', None)  # 确定按钮Button
-
-        win32gui.SendMessage(Edit, win32con.WM_SETTEXT, None, myPath)  # 往输入框输入绝对地址
-        win32gui.SendMessage(dialog, win32con.WM_COMMAND, 1, button)  # 按button
-    except Exception as e:
-        raise e
-
-def uploadFile_x2(fileName,*arg):  # 模拟键盘上传文件，文件路径为testData路径（使用失败），TODO
-    global driver
-    try:
-        myPath = parentDirPath + u"\\testData\\" + fileName
-        print("********** 上传文件的据对路径为：",myPath," **********")
-        Clipboard.setText(myPath)
-        # 将文件路径写入剪贴板
-        Clipboard.getText()
-        KeyboardKeys.twoKeys("ctrl","v")
-        sleep(1)
-        KeyboardKeys.oneKey("enter")
-        sleep(1)
-    except Exception as e:
-        raise e
 
 def runProcessFile(fileName,*arg):    # autoit上传文件
     global driver
@@ -717,13 +999,14 @@ def page_upload_file(locationType,locatorExpression,uploadFileName, *arg):
     global driver
     try:
         findElebyMethod(driver, locationType, locatorExpression).click()
+        sleep(2)
         filePath = parentDirPath + u"\\fileHandle\\" + "file_upload_script.exe"
         print("********** 调用文件的绝对路径为：", filePath, " **********")
         uploadPath = parentDirPath + u"\\fileHandle\\upload_file\\" + uploadFileName
         print("********** 上传文件的绝对路径为：", uploadPath, " **********")
         cmd = "%s %s" %(filePath ,uploadPath)
         os.popen(cmd)
-        sleep(3)
+        sleep(2)
     except Exception as e:
         raise e
 
@@ -810,7 +1093,8 @@ def ifExistThenSetData(locationType,locatorExpression,inputContent):
         element = WebDriverWait(driver, 1).until(lambda x: x.find_element(by=locationType, value=locatorExpression))
         removeAttribute(driver,element,"readonly")
         element.clear()
-        element.send_keys(inputContent)
+        input_time = inputContent.split(" ")[0]
+        element.send_keys(input_time)
     except Exception as e:
         pass
 
@@ -818,6 +1102,15 @@ def ifExistThenReturnAttribute_pinyin(locationType,locatorExpression,attributeTy
     # 若元素存在，则获取页面元素属性值，并转化为拼音字母（查审批岗位专用）
     global driver
     from pypinyin import lazy_pinyin
+    from selenium.common.exceptions import TimeoutException
+    # 当用户姓名中有多音字或其他原因，会导致转换的拼音字符串与用户账号不对应。
+    # 针对于此情况，函数会先从special_list字典中，检索用户对应的拼音字符串。若检索不到，则进行拼音转换。
+    special_list = {
+        u'李浩': 'lihao01',
+        u'曾蓉琴': 'zengrongqin',
+        u'朴贤国': 'piaoxianguo',
+        u'王洋': 'wangyang01'
+    }
     try:
         driver.implicitly_wait(1)
         element = WebDriverWait(driver, 1).until(lambda x: x.find_element(by=locationType, value=locatorExpression))
@@ -829,20 +1122,26 @@ def ifExistThenReturnAttribute_pinyin(locationType,locatorExpression,attributeTy
         if "," in attributeValue:
             attributeValue = attributeValue.split(",")[0]
         # 将属性值转为拼音字母
+        # 先从字典中检索用户对应的拼音字符串，若检索不到，则进行拼音转换
+        for (k, v) in special_list.items():
+            if attributeValue == k:
+                return v
         strTransformed = ''.join(lazy_pinyin(attributeValue))
-
         return strTransformed
-    except Exception as e:
+    except TimeoutException as e:
         return ""
+    except Exception as e:
+        raise e
 
-def ifExistThenReturnOperateValue(locationType, locatorExpression, operateValue, *arg):
+def ifExistThenReturnStopFlag(locationType, locatorExpression, attributeValue, *arg):
     # 若元素存在，则返回表格操作值
     global driver
     try:
         driver.implicitly_wait(1)
         element = WebDriverWait(driver, 1).until(lambda x: x.find_element(by=locationType, value=locatorExpression))
-        if element is not None:
-            return operateValue
+        if element is not None \
+                and element.get_attribute("title") == attributeValue:
+            return ""
     except Exception as e:
         return ""
 
@@ -851,6 +1150,7 @@ def ifExistThenChooseOperateValue(locationType, locatorExpression, operateValue,
     # 表格操作值填写格式：元素存在时返回值|元素不存在时返回值
     # 若元素存在，则返回表格操作值中，"|"之前的值；元素不存在，则返回"|"之后的值
     global driver
+    from selenium.common.exceptions import TimeoutException
     try:
         driver.implicitly_wait(1)
         exist_value = operateValue.split("|")[0]
@@ -858,8 +1158,10 @@ def ifExistThenChooseOperateValue(locationType, locatorExpression, operateValue,
         element = WebDriverWait(driver, 1).until(lambda x: x.find_element(by=locationType, value=locatorExpression))
         if element is not None:
             return exist_value
-    except Exception as e:
+    except TimeoutException as e:
         return not_exist_value
+    except Exception as e:
+        raise e
 
 def ifExistThenChooseOperateValue_diffPosition(locationType, locatorExpression, operateValue, *arg):
     # 返回值格，需填写两个位置信息，中间以"[]"分隔。两个返回值择一，填入不同格中。
@@ -867,6 +1169,7 @@ def ifExistThenChooseOperateValue_diffPosition(locationType, locatorExpression, 
     # 若元素存在，则返回表格操作值中，"|"之前的值，写入"[]"之前的坐标中；
     # 元素不存在，则返回"|"之后的值，写入"[]"之后的坐标中；
     global driver
+    from selenium.common.exceptions import TimeoutException
     try:
         driver.implicitly_wait(1)
         # 元素存在时，返回的值
@@ -878,8 +1181,10 @@ def ifExistThenChooseOperateValue_diffPosition(locationType, locatorExpression, 
         element = WebDriverWait(driver, 1).until(lambda x: x.find_element(by=locationType, value=locatorExpression))
         if element is not None:
             return exist_return_value
-    except Exception as e:
+    except TimeoutException as e:
         return not_exist_return_value
+    except Exception as e:
+        raise e
 
 def ifExistThenPass_xpath_combination(attributeType, locatorExpression, attributeValue, *arg):
     # 将“操作值”与“元素定位表达式”拼接到一起组成完整表达式定位元素
@@ -900,6 +1205,17 @@ def ifExistThenPass_xpath_combination(attributeType, locatorExpression, attribut
     except Exception as e:
         raise e
 
+def ifExistThenReturnOperateValue(locationType, locatorExpression, operateValue, *arg):
+    # 若元素存在，则返回表格操作值
+    global driver
+    try:
+        driver.implicitly_wait(1)
+        element = WebDriverWait(driver, 1).until(lambda x: x.find_element(by=locationType, value=locatorExpression))
+        if element is not None:
+            return operateValue
+    except Exception as e:
+        return ""
+
 # ****************************************JS相关****************************************
 
 def setDataByJS(locationType,locatorExpression,inputContent):       # 通过js修改日期空间的“readonly属性”
@@ -919,7 +1235,7 @@ def writeContracNum(myInfo,*arg):
     # 该方法加断点时可往excel中写值成功，不加断点则写不进去，randomContracNum 方法暂时启用，TODO
     try:
         # ParseExcel().randomContracNum(myInfo)
-        randContractNum = myInfo + randomNum(9)
+        randContractNum = myInfo + randomNum(10)
         return randContractNum
     except Exception as e:
         raise e
@@ -981,3 +1297,771 @@ def checkApprover(varInfo):
             raise AssertionError(e)
         except Exception as e:
             raise e
+
+def checkStateOfContract(operateValue):
+    '''判断合同提交完成后生效状态'''
+    global driver
+    try:
+        state = operateValue.split("|")[0]
+        contractType = operateValue.split("|")[1]
+        op1 = operateValue.split("|")[2]
+        op2 = operateValue.split("|")[3]
+        if state == "是" \
+            and (contractType == "项目采购类型" or contractType == "第三方采购类型"):
+            return op2
+        else:
+            return op1
+    except Exception as e:
+        raise e
+
+# ****************************************项目关键字：财务管理模块****************************************
+def getHidenInfo(myText):
+    '''一层层点击开下拉框折叠项
+    :param myText: 标准格式为“x1|x2|x3”,依次点击“x1”、“x3”、“x3”
+    '''
+    myTextArray = myText.split("|")
+    for i in range(len(myTextArray)):
+        sleep(0.5)
+        # myXpath = "//*[contains(text(),\'" + myTextArray[i] + "\')]"
+        myXpath = "//span[contains(text(),\'" + myTextArray[i] + "\')]"
+        highlightElement("xpath", myXpath)
+        click_Obj("xpath",myXpath)
+        sleep(0.5)
+
+def getInfoWanted(locationType,locatorExpression,myTest):
+    '''遍历表格数据，校验详情页面是否存在指定字段（通常校验“备注”字段），暂不支持翻页
+    :param locationType: 定位方式
+    :param locatorExpression: 定位值
+    :param myTest: 目标数据详情页面存在的唯一字段
+    '''
+    global driver
+    try:
+        elements = findElesbyMethod(driver,locationType,locatorExpression)
+        print("********** 共有 ",len(elements)," 个待遍历元素 **********")
+        loopTime = 1
+        for i in elements:
+            highlight(driver,i)
+            i.click()
+            switch_to_now_window(1)
+            loadPage()
+
+            try:
+                myXpath = "//span[.='" + myTest + "']"
+                waitVisibilityOfElementLocated("xpath",myXpath)
+                sleep(0.5)
+                print("********** 已找到目标记录！ **********")
+                return
+            except:
+                close_page()
+                switch_to_now_window(0)
+
+            try:
+                assert loopTime != len(elements), u"未找到目标记录！"
+                loopTime += 1
+            except AssertionError as e:
+                print("********** 未找到目标记录！ **********")
+                raise AssertionError(e)
+
+    except Exception as e:
+        raise e
+
+def getNextUser(attributeType,locatorExpression,userBefore):
+    '''获取下一岗审批人，并依据模块循环规则写入“数据表”sheet相应字段
+    :param attributeType:待获取元素的属性种类
+    :param locatorExpression:待获取元素的xpath
+    :param userBefore:已有的全部审批人信息
+    :return:含下一岗的全部审批人信息（若已结束审批，则返回值格式为“xx*xx*..xx*”）
+    '''
+    strTransformed = ifExistThenReturnAttribute_pinyin("xpath",locatorExpression,attributeType)
+
+    if userBefore == "循环初始化":
+        myUser = strTransformed
+    else:
+        myUser = userBefore + "*" + strTransformed
+
+    return myUser
+
+def setAmountOfPayment(myInfo):
+    '''付款申请新建中，关联完采购订单后修改申请金额
+    :param myTitle: 采购订单号
+    :param amount: 申请金额
+    '''
+    myTitle = myInfo.split("|")[0]
+    amount = myInfo.split("|")[1]
+    myXpath = '//td[@title="' + myTitle +'"]/following-sibling::td[last()]/input'
+    sendkeys_To_Obj("xpath",myXpath,amount)
+    pageKeySimulate("xpath",myXpath,"page_tab")
+
+def ifExist_pageKeySimulate(locationType,locatorExpression,keyType):
+    ''' 若元素存在，则进行页面滑动 '''
+    try:
+        driver.implicitly_wait(1)
+        element = WebDriverWait(driver, 1).until(lambda x: x.find_element(by = locationType, value = locatorExpression))
+        pageKeySimulate(locationType,locatorExpression,keyType)
+    except Exception as e:
+        pass
+
+
+# ****************************************项目关键字：进出口合同模块****************************************
+def getNumWanted(locationType, locatorExpression, myNum):
+    '''遍历数据，查找页面是否存在指定合同号，支持翻页
+    :param locationType: 定位方式
+    :param locatorExpression: 定位值
+    :param myNum: 目标数据中唯一字段的text属性
+    '''
+    global driver
+    from selenium.common.exceptions import TimeoutException
+    try:
+        myXpath = "//a[]"
+        xpath_combination_click("text()", myXpath, myNum)
+
+    except TimeoutException as e:
+        # 若没有找到指定元素，开始翻页操作
+        try:
+            elements = findElesbyMethod(driver,locationType,locatorExpression)
+            print("********** 共有 ",len(elements)," 个待遍历元素 **********")
+            loopTime = 1
+            for i in elements:
+                highlight(driver,i)
+                i.click()
+                loadPage()
+
+                try:
+                    xpath_combination_click("text()", myXpath, myNum)
+                    print("********** 已找到目标记录！ **********")
+                    return
+                except TimeoutException as e:
+                    assert loopTime < len(elements), u"未找到目标元素！"
+                    loopTime += 1
+                except Exception as e:
+                    raise e
+        except Exception as e:
+            raise e
+    except Exception as e:
+        raise e
+
+# ****************************************项目关键字：个人中心****************************************
+def setCheckBox(myText):
+    '''点击多个check box
+    :param myText: 标准格式为“x1|x2|x3”,依次点击“x1”、“x3”、“x3”
+    '''
+    myTextArray = myText.split("|")
+    try:
+        for i in range(len(myTextArray)):
+            myXpath_A = "//div[.='" + myTextArray[i] + "']/preceding-sibling::input[@class='check']"
+            myXpath_B = "//span[.='" + myTextArray[i] + "']/input"
+
+            errInfo = "未找到的元素：%s！" %myTextArray[i]
+            try:
+                element = WebDriverWait(driver, 1).until(
+                    lambda x: x.find_element(by="xpath", value=myXpath_A), errInfo)
+                assert element.is_enabled() == True
+            except Exception as e:
+                element = WebDriverWait(driver, 1).until(
+                    lambda x: x.find_element(by="xpath", value=myXpath_B), errInfo)
+            # highlight(driver, element)
+            element.click()
+    except Exception as e:
+        raise e
+
+
+# **************************************** 日常办公 ****************************************
+def getInfoNeeded(myText):
+    ''' 针对待办记录中无法用单据号查询情况，遍历当前页获取对应单据信息
+    :param myText: 单据号
+    '''
+    try:
+        global driver
+        xp = "(//th[.=\'签报单号\']/../../../tbody//tr)"
+        trs = findElesbyMethod(driver, "xpath", xp)
+        for i in range(len(trs)):
+            xps = xp + "[" + str(i+1) + "]//a"
+            el = findElebyMethod(driver, "xpath", xps)
+            if el.text == myText:
+                el.click()
+                return
+            assert i + 1 < len(trs), "当前页未找到单据记录！"
+    except AssertionError as e:
+        raise e
+    except Exception as e:
+        raise e
+
+
+# **************************************** 组合功能 ****************************************
+def getApprovalFlow(returnFlag=None):
+    ''' （单据详情页）获取审批流详情，避免每岗审批后均要查询
+    :param flag: 自动审批跳出函数标志位，防止自动审批情况下查不到审批流信息报错
+    :return: 审批流信息
+    '''
+    # 当用户姓名中有多音字或其他原因，会导致转换的拼音字符串与用户账号不对应。
+    # 针对于此情况，函数会先从special_list字典中，检索用户对应的拼音字符串。若检索不到，则进行拼音转换。
+    special_list = {
+        u'李浩': 'lihao01',
+        u'曾蓉琴': 'zengrongqin',
+        u'朴贤国': 'piaoxianguo',
+        u'王洋': 'wangyang01',
+        u'张鑫': 'zhangxin01'
+    }
+    trans = False
+    try:
+        waitVisibilityOfElementLocated("xpath", "//span[contains(text(), '审批状态')]")
+    except Exception as e:
+        if returnFlag != "None":
+            raise e
+        else:
+            return
+
+    try:
+        scroll_slide_field("xpath", "//span[contains(text(), '审批状态')]")
+
+        finalStr = ""
+        eles = findElesbyMethod(driver, "xpath", "//td[.='待处理']")
+
+        for i in range(len(eles)):
+            xp = "((//td[.='待处理'])[%d]/../td)[2]" %(i + 1)
+            element = findElebyMethod(driver, "xpath", xp)
+
+            ip = "((//td[.='待处理'])[%d]/../td)[2]//i" %(i + 1)
+            # c = getAttribute("xpath", ip, "class")
+            c = findElesbyMethod(driver, "xpath", ip)[0].get_attribute("class")
+
+            if c != "hideCss":
+                for (k, v) in special_list.items():
+                    if element.text == k:
+                        finalStr += v + "*"
+                        trans = True
+                if trans == False:
+                    finalStr += pinyinTransform(element.text) + "*"
+                trans = False
+
+        print("finalStr: ", finalStr)
+        return finalStr
+    except Exception as e:
+        raise e
+
+
+def loginProcess(username, password, loginTime=15):
+    ''' 登陆流程 '''
+    try:
+        sendkeys_To_Obj("xpath", '//input[@ng-model="user_name"]', username)
+        sendkeys_To_Obj("xpath", '//input[@ng-model="password"]', password)
+        click_Obj("xpath", '//*[contains(@value,"登录") or .="登录"]')
+        sleep(1)
+        wait_elements_vanish("xpath", '//*[contains(@value,"登录") or .="登录"]', loginTime)
+        wait_elements_vanish("xpath", '//td[.="没有单据内容"]', 30)
+        # sleep(1)
+        # ifExistThenClick("xpath", '//span[.="我的单据"]')
+        # ifExistThenClick("xpath", '//span[.="我的单据(新)"]')
+        loadPage()
+        waitVisibilityOfElementLocated("xpath", '//div[.="我的单据"]')
+    except Exception as e:
+        raise e
+
+
+def checkToLogin(userInfo):
+    ''' 含判断机制的登陆
+    :param userInfo: 用户名|密码
+    '''
+    userInfo = userInfo.split("|")
+    username = userInfo[0]
+    password = userInfo[1]
+    try:
+        # el存在，则已登录
+        el = findElebyMethod(driver, "xpath", '//li[@class="nav-item dropdown"]/a/span/span', timeout=1)
+        assert username in el.text
+        # username即当前用户，跳出
+        return
+    except AssertionError:
+        # username非当前用户，须先登出再重新登陆
+        click_Obj("xpath", '//li[@class="nav-item dropdown"]')
+        click_Obj("xpath", '//a[.="退出"]')
+        loginProcess(username, password)
+    except Exception:
+        # el不存在
+        try:
+            loginEl = findElebyMethod(driver, "xpath", '//input[@ng-model="user_name"]', timeout=1)
+            # 登陆界面，可直接登陆
+        except:
+            # 须从调起driver开始
+            open_browser("chrome")
+            maximize_browser()
+            # visit_url(userInfo[2])
+        finally:
+            loginProcess(username, password)
+
+
+# [SAP]
+# **************************************** 基础配置 ****************************************
+@SAPException
+def createObject(info):
+    ''' 调起SAP服务，20190521
+    :param path: SAP执行文件路径
+    :param env: 本地登陆环境名
+    :return: 全局变量session
+    '''
+    import subprocess
+    import win32com.client
+    global session, MS, connection
+    info = info.split("|")
+    path = info[0]
+    env = info[1]
+
+    subprocess.Popen(path)
+    time.sleep(1)
+
+    # 最长等待时间（须≥2）
+    MS = 10
+
+    loopTime = 3
+    for i in range(loopTime):
+        try:
+            SapGuiAuto = win32com.client.GetObject('SAPGUI')
+            print("********** SAP成功启动！ **********")
+            assert type(SapGuiAuto) == win32com.client.CDispatch
+            break
+        except AssertionError as e:
+            return
+        except Exception as e:
+            if i + 1 < loopTime:
+                continue
+            else:
+                raise e
+
+    application = SapGuiAuto.GetScriptingEngine
+    if not type(application) == win32com.client.CDispatch:
+        SapGuiAuto = None
+        return
+
+    # help(application.OpenConnection)
+    # Function openConnection(descriptionString As String, sync As Boolean False, raiseAsBoolean = True)
+
+    # connection = application.OpenConnection(env, True)
+    #
+    # if not type(connection) == win32com.client.CDispatch:
+    #     application = None
+    #     SapGuiAuto = None
+    #     return
+
+    for i in range(loopTime):
+        try:
+            connection = application.OpenConnection(env, True)
+            assert type(connection) == win32com.client.CDispatch
+            break
+        except AssertionError as e:
+            application = None
+            SapGuiAuto = None
+            return
+        except Exception as e:
+            if i + 1 < loopTime:
+                continue
+            else:
+                raise e
+
+
+    for i in range(loopTime):
+        try:
+            session = connection.Children(0)
+            assert type(session) == win32com.client.CDispatch
+            break
+        except AssertionError as e:
+            connection = None
+            application = None
+            SapGuiAuto = None
+            return
+        except Exception as e:
+            if i + 1 < loopTime:
+                continue
+            else:
+                raise e
+
+@SAPException
+def saplogin(info):
+    ''' 登陆SAP，20190521 '''
+    global session, AW
+    info = info.split("|")
+    userName = info[0]
+    passWord = info[1]
+
+    session.findById("wnd[0]/usr/txtRSYST-BNAME").text = userName
+    session.findById("wnd[0]/usr/pwdRSYST-BCODE").text = passWord
+    session.findById("wnd[0]").sendVKey(0)
+
+    try:
+        # 等待“多次登陆”弹出框2s
+        waitUntil(session.Children.count==2, "False", maxSec="2|pass")
+        # 父对象，'/app/con[i]'
+        ''' 方法一 .Parent '''
+        # p = self.session.Parent
+        # try:
+        #     if p.findById("ses[0]/wnd[1]"):
+        #         self.session.findById("wnd[1]/usr/radMULTI_LOGON_OPT2").select()
+        #         self.session.findById("wnd[1]/usr/radMULTI_LOGON_OPT2").setFocus()
+        #         self.session.findById("wnd[1]/tbar[0]/btn[0]").press()
+        # except:
+        #     pass
+
+        ''' 方法二 .ActiveWindow.FindAllByName '''
+        updateActiveWindow()
+        if AW.FindAllByName("wnd[1]", "GuiModalWindow").count == 1:
+            AW.findById("usr/radMULTI_LOGON_OPT2").select()
+            AW.findById("usr/radMULTI_LOGON_OPT2").setFocus()
+            AW.findById("tbar[0]/btn[0]").press()
+            # session.findById("wnd[1]/usr/radMULTI_LOGON_OPT2").select()
+            # session.findById("wnd[1]/usr/radMULTI_LOGON_OPT2").setFocus()
+            # session.findById("wnd[1]/tbar[0]/btn[0]").press()
+    except:
+        pass
+
+    # 等待“信息”弹出框1s
+    try:
+        waitObj("name|wnd[1]|GuiModalWindow", "pass", "1|信息")
+        btn = session.findById("wnd[1]/tbar[0]/btn[0]")
+        btn.press()
+    except:
+        pass
+
+    # waitObj("name|wnd[0]|GuiMainWindow", "err", "SAP 轻松访问 中建信息")
+    print("********** SAP成功登陆！ **********")
+
+@SAPException
+def updateActiveWindow():
+    ''' 更新ActiveWindow，20190521 '''
+    global AW, session
+    AW = session.ActiveWindow
+    return AW
+
+def closeSAP():
+    ''' 结束SAP（所有）进程 '''
+    import psutil, os
+    pids = psutil.pids()
+    for pid in pids:
+        p = psutil.Process(pid)
+        # print('pid-%s,pname-%s' % (pid, p.name()))
+        if p.name() == 'saplogon.exe':
+            cmd = 'taskkill /F /IM saplogon.exe'
+            # 无需结束sap进程时，注释下行
+            # os.system(cmd)
+
+@SAPException
+def createNewSession():
+    ''' 创建新session（窗口） '''
+    global session, connection
+    oc = connection.children.count
+    session.createSession()         # session数+1
+    sleep(1)
+    session = connection.children(oc)
+    for i in range(2):
+        updateActiveWindow()
+        try:
+            waitObj("name|titl|GuiTitlebar", "pass", "SAP 轻松访问 中建信息|3")
+            return
+        except:
+            pass
+    updateActiveWindow()
+    waitObj("name|titl|GuiTitlebar", "err", "SAP 轻松访问 中建信息|3")
+
+def closeAllSession():
+    global connection, session
+    if 'connection' not in locals().keys():
+        return
+
+    sessions = connection.children
+    for i in range(sessions.count):
+        # 遍历 sessions.count 个session
+        for j in range(10):
+            try:
+                wndId = "wnd[" + str(j) + "]"
+                window = sessions[i].findById(wndId)
+                window.close()
+                try:
+                    # 存在“注销”弹出框，则为最后一个window
+                    msgBox =  sessions[i].findById("wnd[" + str(j+1) + "]")
+                    assert msgBox.text == "注销"
+                    msgBox.findById("usr/btnSPOP-OPTION1").press()
+                    session = None
+                    return
+                except:
+                    pass
+            except:
+                break
+
+# **************************************** 基本操作 ****************************************
+@SAPException
+def performObj(performType, info, text=None):
+    ''' 操作对象
+    :param performType: 操作类型（输入/左击/勾选框/聚焦）
+    :param info: 属性类型（id/name）|属性值
+    :param text: 输入内容（performType为“输入”时）/对象text属性值（performType非“输入”时），选填
+    '''
+    global session, AW
+    myInfo = info.split("|")
+
+    if len(myInfo) == 4:
+        # info: "name"|name|type|text
+        obj = getObjsByNameAndText(myInfo[1] + "|" + myInfo[2], myInfo[3])
+    elif performType in ["左击", "聚焦", "选择"] and text:
+        obj = getObjsByNameAndText(info.split("|", 1)[1], text)
+    else:
+        obj = getObj(myInfo[0], info.split("|", 1)[1])
+
+    if performType == "输入":
+        obj.text = text
+    elif performType == "下拉框":
+        obj.key = text
+    elif performType == "左击":
+        obj.press()
+    elif performType == "双击":
+        obj.doubleClick()
+    elif performType == "勾选框":
+        # text = -1（勾选）/0（取消勾选）
+        if obj.type in ["GuiCheckBox"]:
+            # 示例type：GuiCheckBox
+            obj.selected = int(text)
+        elif obj.type in ["GuiShell"]:
+            # 示例type：GuiShell
+            obj.modifyCheckbox(0, "SEL", int(text))
+            obj.triggerModified()
+    elif performType == "聚焦":
+        obj.setFocus()
+    elif performType == "选择":
+        obj.Select()
+    elif performType == "模拟键盘":
+        if text in keySimulated.keys():
+            obj.sendVKey(keySimulated[text])
+        else:
+            obj.sendVKey(text)
+    elif performType == "关闭":
+        obj.close()
+
+@SAPException
+def performOnTable(performType, objInfo, inputInfo):
+    ''' 根据同一类对象（同列）的不同index（不同行），操作table表格
+    :param performType: 操作类型
+    :param objInfo: name|type（表格类型为“GuiShell”时，后面还有“列信息”）
+    :param inputInfo: text1%n1|text2%n2|...
+                        (text为输入值；“%n”为选填项，对应表格index，从0开始)
+    '''
+    global AW
+    II = inputInfo.split("|")
+    OI = objInfo.split("|")
+    # 默认从第一行开始
+    initInfo = II[0].split("%")
+    rowCount = 0 if len(initInfo) == 1 else int(initInfo[1])
+
+    for i in range(len(II)):
+        info = II[i].split("%")
+        text = info[0]
+        if i > 0:
+            rowCount = (rowCount + 1) if len(info) == 1 else int(info[1])
+        objs = AW.FindAllByName(OI[0], OI[1])
+
+        if objs.count > 0 and objs[0].type == "GuiShell":
+            # GuiShell类型表格
+            obj = objs[0]
+            if performType == "输入":
+                obj.modifyCell(rowCount, OI[2], text)
+        else:
+            # 常规表格，通过index定位
+            obj = objs[rowCount]
+            if performType == "输入":
+                obj.text = text
+            elif performType == "下拉框":
+                obj.key = text
+            elif performType == "左击":
+                obj.press()
+            elif performType == "双击":
+                obj.doubleClick()
+            elif performType == "勾选框_A":
+                # text = -1（勾选）/0（取消勾选）
+                # 示例type：GuiCheckBox
+                obj.selected = int(text)
+            elif performType == "聚焦":
+                obj.setFocus()
+            elif performType == "选择":
+                obj.Select()
+            elif performType == "模拟键盘":
+                obj.sendVKey(keySimulated[text])
+
+@SAPException
+def performToolbar(performType, info):
+    ''' 操作type为GuiShell对象
+    :param performType: 操作类型（提交/全部选择/清空选择/查看详情）
+    :param info: 属性类型（id/name）|属性值
+    '''
+    global session, AW
+    myInfo = info.split("|")
+
+    if len(myInfo) == 4:
+        # info: "name"|name|type|text
+        obj = getObjsByNameAndText(myInfo[1] + "|" + myInfo[2], myInfo[3])
+    else:
+        obj = getObj(myInfo[0], info.split("|", 1)[1])
+
+    if performType == "提交":
+        obj.pressToolbarButton("ZPOST")
+    elif performType == "全部选择":
+        obj.pressToolbarButton("ZSALL")
+    elif performType == "清空选择":
+        obj.pressToolbarButton("ZDSAL")
+    elif performType == "查看详情":
+        obj.selectContextMenuItem("&DETAIL")
+
+@SAPException
+def getObj(case, info):
+    ''' 获取对象
+    :param case: 属性
+    :param info: 属性值
+    '''
+    global AW
+    info = info.split("|")
+    typeInfo = case + "|" + info[0]
+    typeInfo += ("|" + info[1]) if len(info) > 1 else ""
+    waitObj(typeInfo, "err")
+
+    if case == "id":
+        obj = AW.findById(info[0])
+        return obj
+    elif case == "name":
+        # obj = AW.FindByName(info[0], info[1])
+        obj = AW.FindAllByName(info[0], info[1])[0]
+        return obj
+
+@SAPException
+def getObjsByNameAndText(info, text):
+    ''' 通过FindAllByName获取对象集合，再由text唯一定位
+    :param info: 属性值（name|type）
+    :param text: text属性值
+    '''
+    global AW
+    typeInfo = "name|" + info
+    waitObj(typeInfo, "err")
+
+    info = info.split("|")
+    objs = AW.FindAllByName(info[0], info[1])
+    for i in range(objs.count):
+        if objs[i].text == text:
+            return objs[i]
+        assert i + 1 == objs.count, \
+            "该页面未找到name为“%s”、type为“%s”、text为“%s”的对象！" %(info[0], info[1], text)
+
+@SAPException
+def getText(case, info):
+    ''' 获取对象text '''
+    obj = getObj(case, info)
+    return obj.text
+
+@SAPException
+def getNumInText(numInfo):
+    import re
+    num = re.findall('\d+', numInfo)
+    return num[0] if len(num) == 1 else num[1]
+
+# **************************************** 等待和校验 ****************************************
+@SAPException
+def waitObj(typeInfo, valueReturned, extraInfo=""):
+    ''' 查找id，循环等待对象，20190522
+    :param typeInfo: 属性（id/name）|属性值
+    :param valueReturned: 未等到结果时结束方式（err：报错/pass：通过）
+    :param extraInfo（选填）:可填写最长等待时间（默认为MS），及对象text属性（有值校验，不填不检验），顺序不限，用“|”隔开
+    '''
+    import re
+    global AW, MS
+    # 数据初始化
+    updateActiveWindow()
+    typeInfo = typeInfo.split("|")
+
+    num = re.findall('\d+', extraInfo)
+    num = num[0] if len(num) else ""
+    maxSec = MS if not num else int(num)
+    text = extraInfo.replace(num, "").replace("|", "")
+
+    for i in range(maxSec):
+        try:
+            if typeInfo[0] == "id":
+                obj = AW.findById(typeInfo[1])
+            elif typeInfo[0] == "name":
+                obj = AW.FindByName(typeInfo[1], typeInfo[2])
+
+            # 校验text属性
+            if text:
+                assert obj.text == text
+
+            return
+        except:
+            try:
+                assert maxSec != i + 1, \
+                    str(maxSec) + " s内未找到 '" + typeInfo[0] + "' 为 '" + typeInfo[1] + "' 的对象！"
+                time.sleep(1)
+            except AssertionError as e:
+                if valueReturned == "err":
+                    raise AssertionError(e)
+                elif valueReturned == "pass":
+                    pass
+            except Exception as e:
+                raise e
+
+@SAPException
+def waitUntil(event, condition, maxSec):
+    ''' 循环等待（event是否发生与condition一致时，等待，否则跳出），20190521
+    :param event: 待判断主体（布尔类型）
+    :param condition: True/False
+    :param maxSec: 最长循环等待时间（≥2）|未等到结果（err：报错/pass：通过）
+    '''
+    ms = maxSec.split("|")
+    maxSec = int(ms[0])
+    result = ms[1]
+    for i in range(maxSec):
+        try:
+            assert maxSec != i + 1, \
+                str(maxSec) + " s内均未等到指定事件发生！"
+            if bool(event) == eval(condition):
+                time.sleep(1)
+            else:
+                return
+        except AssertionError as e:
+            if result == "err":
+                raise AssertionError(e)
+            elif result == "pass":
+                pass
+        except Exception as e:
+            raise e
+
+@SAPException
+def checkText(textExpected, realText):
+    ''' 校验
+    :param textExpected: 预期值
+    :param realText: 实际值
+    '''
+    assert textExpected == realText, \
+        "预期值 " + textExpected + " 与实际值 " + realText + " 不符！"
+
+# **************************************** 项目关键字 ****************************************
+# 采购申请
+@SAPException
+def chooseToReturn(infoA, infoB, infoC):
+    infoA = infoA.split("|")
+    infoB = infoB.split("|")
+    for i in range(len(infoB)):
+        if "|" in infoC:
+            for str in infoC.split("|"):
+                if str == infoB[i]:
+                    return infoA[0]
+        else:
+            if infoC == infoB[i]:
+                return infoA[0]
+    VR = infoA[1] if len(infoA) > 1 else None
+    # if len(infoA) > 1:
+    #     VR = infoA[1]
+    return VR
+
+@SAPException
+def chooseHowToTrans(var):
+    var = var.split("|", 1)
+    account = 0
+    account += 1 if var[0] == "0" else 0
+    for str in var[1].split("|"):
+        if str in ["200", "300"]:
+            account += 1
+            break
+    VR = "" if account == 2 else "zif001"
+    return VR

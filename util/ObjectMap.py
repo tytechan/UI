@@ -6,36 +6,37 @@ from selenium.webdriver.common.by import By
 # import os
 
 
-def findElebyMethod(driver, locateType, locatorExpression):
+def findElebyMethod(driver, locateType, locatorExpression, timeout=10):
+    errInfo = "未找到 '%s' 为 '%s' 的元素！" %(locateType, locatorExpression)
     try:
         locateType = locateType.lower()
         if locateType == 'id':
-            specify_element = WebDriverWait(driver, 10).until(
-                EC.visibility_of_element_located((By.ID, locatorExpression)))
+            specify_element = WebDriverWait(driver, timeout).until(
+                EC.visibility_of_element_located((By.ID, locatorExpression)), errInfo)
         elif locateType == 'name':
-            specify_element = WebDriverWait(driver, 10).until(
-                EC.visibility_of_element_located((By.NAME, locatorExpression)))
+            specify_element = WebDriverWait(driver, timeout).until(
+                EC.visibility_of_element_located((By.NAME, locatorExpression)), errInfo)
         elif locateType == 'classname':
-            specify_element = WebDriverWait(driver, 10).until(
-                EC.visibility_of_element_located((By.CLASS_NAME, locatorExpression)))
+            specify_element = WebDriverWait(driver, timeout).until(
+                EC.visibility_of_element_located((By.CLASS_NAME, locatorExpression)), errInfo)
         elif locateType == 'link_text':
-            specify_element = WebDriverWait(driver, 10).until(
-                EC.visibility_of_element_located((By.LINK_TEXT, locatorExpression)))
+            specify_element = WebDriverWait(driver, timeout).until(
+                EC.visibility_of_element_located((By.LINK_TEXT, locatorExpression)), errInfo)
         elif locateType == 'xpath':
-            specify_element = WebDriverWait(driver, 10).until(
-                EC.visibility_of_element_located((By.XPATH, locatorExpression)))
+            specify_element = WebDriverWait(driver, timeout).until(
+                EC.visibility_of_element_located((By.XPATH, locatorExpression)), errInfo)
         elif locateType == 'css_selector':
-            specify_element = WebDriverWait(driver, 10).until(
-                EC.visibility_of_element_located((By.CSS_SELECTOR, locatorExpression)))
+            specify_element = WebDriverWait(driver, timeout).until(
+                EC.visibility_of_element_located((By.CSS_SELECTOR, locatorExpression)), errInfo)
         elif locateType == 'partial_link_text':
-            specify_element = WebDriverWait(driver, 10).until(
-                EC.visibility_of_element_located((By.PARTIAL_LINK_TEXT, locatorExpression)))
+            specify_element = WebDriverWait(driver, timeout).until(
+                EC.visibility_of_element_located((By.PARTIAL_LINK_TEXT, locatorExpression)), errInfo)
         elif locateType == 'value':
-            specify_element = WebDriverWait(driver, 10).until(
-                EC.visibility_of_element_located((By.XPATH, "//*[contains(@value,'"+locatorExpression+"')]")))
+            specify_element = WebDriverWait(driver, timeout).until(
+                EC.visibility_of_element_located((By.XPATH, "//*[contains(@value,'"+locatorExpression+"')]")), errInfo)
         elif locateType == 'text':
-            specify_element = WebDriverWait(driver, 10).until(
-                EC.visibility_of_element_located((By.XPATH, "//*[text()='"+locatorExpression+"']")))
+            specify_element = WebDriverWait(driver, timeout).until(
+                EC.visibility_of_element_located((By.XPATH, "//*[text()='"+locatorExpression+"']")), errInfo)
 
         # myindex = int(index)
         # return specify_elements[myindex]
@@ -43,30 +44,31 @@ def findElebyMethod(driver, locateType, locatorExpression):
     except Exception as e:
         raise e
 
-def findElesbyMethod(driver, locateType, locatorExpression):
+def findElesbyMethod(driver, locateType, locatorExpression, timeout=10):
+    errInfo = "未找到 '%s' 为 '%s' 的元素！" %(locateType, locatorExpression)
     try:
         locateType = locateType.lower()
         if locateType == 'id':
-            specify_elements = WebDriverWait(driver, 10).until(
-                EC.presence_of_all_elements_located((By.ID, locatorExpression)))
+            specify_elements = WebDriverWait(driver, timeout).until(
+                EC.presence_of_all_elements_located((By.ID, locatorExpression)), errInfo)
         elif locateType == 'name':
-            specify_elements = WebDriverWait(driver, 10).until(
-                EC.presence_of_all_elements_located((By.NAME, locatorExpression)))
+            specify_elements = WebDriverWait(driver, timeout).until(
+                EC.presence_of_all_elements_located((By.NAME, locatorExpression)), errInfo)
         elif locateType == 'classname':
-            specify_elements = WebDriverWait(driver, 10).until(
-                EC.presence_of_all_elements_located((By.CLASS_NAME, locatorExpression)))
+            specify_elements = WebDriverWait(driver, timeout).until(
+                EC.presence_of_all_elements_located((By.CLASS_NAME, locatorExpression)), errInfo)
         elif locateType == 'link_text':
-            specify_elements = WebDriverWait(driver, 10).until(
-                EC.presence_of_all_elements_located((By.LINK_TEXT, locatorExpression)))
+            specify_elements = WebDriverWait(driver, timeout).until(
+                EC.presence_of_all_elements_located((By.LINK_TEXT, locatorExpression)), errInfo)
         elif locateType == 'xpath':
-            specify_elements = WebDriverWait(driver, 10).until(
-                EC.presence_of_all_elements_located((By.XPATH, locatorExpression)))
+            specify_elements = WebDriverWait(driver, timeout).until(
+                EC.presence_of_all_elements_located((By.XPATH, locatorExpression)), errInfo)
         elif locateType == 'css_selector':
-            specify_elements = WebDriverWait(driver, 10).until(
-                EC.presence_of_all_elements_located((By.CSS_SELECTOR, locatorExpression)))
+            specify_elements = WebDriverWait(driver, timeout).until(
+                EC.presence_of_all_elements_located((By.CSS_SELECTOR, locatorExpression)), errInfo)
         elif locateType == 'partial_link_text':
-            specify_elements = WebDriverWait(driver, 10).until(
-                EC.presence_of_all_elements_located((By.PARTIAL_LINK_TEXT, locatorExpression)))
+            specify_elements = WebDriverWait(driver, timeout).until(
+                EC.presence_of_all_elements_located((By.PARTIAL_LINK_TEXT, locatorExpression)), errInfo)
 
         # myindex = int(index)
         # return specify_elements[myindex]
@@ -75,16 +77,18 @@ def findElesbyMethod(driver, locateType, locatorExpression):
         raise e
 
 
-def findEleByDetail(driver, locateType, locatorExpression):
+def findEleByDetail(driver, locateType, locatorExpression, timeout=10):
+    errInfo = "未找到 '%s' 为 '%s' 的元素！" %(locateType, locatorExpression)
     try:
-        element = WebDriverWait(driver, 10).until(lambda x: x.find_element(by = locateType, value = locatorExpression))
+        element = WebDriverWait(driver, timeout).until(lambda x: x.find_element(by = locateType, value = locatorExpression), errInfo)
         return element
     except Exception as e:
         raise e
 
-def findElesByDetail(driver, locateType, locatorExpression):
+def findElesByDetail(driver, locateType, locatorExpression, timeout=10):
+    errInfo = "未找到 '%s' 为 '%s' 的元素集合！" %(locateType, locatorExpression)
     try:
-        elements = WebDriverWait(driver, 10).until(lambda x: x.find_elements(by = locateType, value = locatorExpression))
+        elements = WebDriverWait(driver, timeout).until(lambda x: x.find_elements(by = locateType, value = locatorExpression), errInfo)
         return elements
     except Exception as e:
         raise e

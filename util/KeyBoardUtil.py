@@ -9,9 +9,22 @@ class KeyboardKeys(object):
     模拟键盘按键类
     '''
     VK_CODE = {
-        'enter':0x0D,
-        'ctrl':0x11,
-        'v':0x56
+        'enter': 0x0D,
+        'ctrl': 0x11,
+        'v': 0x56,
+        'F1': 112,
+        'F2': 113,
+        'F3': 114,
+        'F4': 115,
+        'F5': 116,
+        'F6': 117,
+        'F7': 118,
+        'F8': 119,
+        'F9': 120,
+        'F10': 121,
+        'F11': 122,
+        'F12': 123,
+        "Tab": 9,
     }
 
     @staticmethod
@@ -34,6 +47,6 @@ class KeyboardKeys(object):
     def twoKeys(key1,key2):
         # 模拟两个组合按键
         KeyboardKeys.keyDown(key1)
-        KeyboardKeys.keyDown(key1)
+        KeyboardKeys.keyDown(key2)
         KeyboardKeys.keyUp(key2)
-        KeyboardKeys.keyUp(key2)
+        KeyboardKeys.keyUp(key1)

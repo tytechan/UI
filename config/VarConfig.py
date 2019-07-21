@@ -2,6 +2,7 @@
 # 用于定义框架中用到的全局变量
 
 import os
+from .global_config import get_value
 
 '''
 配置全局变量后无需设置driver路径
@@ -19,8 +20,9 @@ screenPicturesDir = parentDirPath + u"\\processpictures\\"
 # # 获取存放页面元素定位表达式文件的绝对路径,纯数据驱动中才需要，较繁琐
 # parentElementLocatorPath = parentDirPath + u"\\config\\PageElementLocator.ini"
 
-# 获取数据文件存放的绝对路径,数据文件后期更换，TODO
-dataFilePath = parentDirPath + u"\\testData\\数据汇总.xlsx"
+# 获取数据文件存放的绝对路径
+# dataFilePath = parentDirPath + u"\\testData\\数据汇总.xlsx"
+dataFilePath = get_value("FILEPATH")
 
 '''
 数据文件excel中，每列对应的数字编号，

@@ -9,6 +9,10 @@ from action.PageAction import *
 
 
 def mixDriverRun(picDir):
+    # 基于“__init__.py”中获取的“FILEPATH”只在程序开始时引包中执行，当运行到下一条流程时，
+    # 须在此处重新定义“FILEPATH”
+    excelObj.loadWorkBook(get_value("FILEPATH"))
+
     try:
         logging.info("********** 该流程截图路径为：'%s' **********" %picDir)
         # 根据excel中sheet名称获取sheet对象
@@ -92,6 +96,13 @@ def mixDriverRun(picDir):
                         writeTextResult(caseIntroSheet,
                                         rowNo = Looptime + 2,
                                         colsNo = "CaseIntro",testResult = "跳过")
+
+                    elif result == "无可执行数据":
+                        print("********** 无可执行数据，该excel调用终止！ **********")
+                        logging.info(u">> 流程无可用数据，请检查文件 '%s' \n\n"
+                                     %get_value("FILEPATH"))
+                        return
+
                     else:
                         logging.info(u"功能 '%s' 执行失败" %funcName)
                         writeTextResult(caseIntroSheet,
@@ -220,13 +231,13 @@ def mixDriverRun(picDir):
         #                     colsNo="DataSource", testResult="成功",
         #                     dataUse="已使用")
 
-        logging.info(u">> 共 %d 个功能模块, %d 个需要被执行,成功执行 %d 个 \n\n"
+        logging.info(u">> 共 %d 个功能模块, %d 个已执行,成功执行 %d 个 \n\n"
 
                      %(len(isExecuteColumn) - 1,requiredModuleNum,successfulModuleNum))
         # close_browser()
 
     except Exception as e:
-        logging.info(u">> 共 %d 个功能模块, %d 个需要被执行,成功执行 %d 个 \n"
+        logging.info(u">> 共 %d 个功能模块, %d 个已执行,成功执行 %d 个 \n"
                      %(len(isExecuteColumn) - 1,requiredModuleNum,successfulModuleNum))
 
 
