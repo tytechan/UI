@@ -130,9 +130,9 @@ def visit_url(url,*arg):        #访问某个网址
         elif url == u'500':
             driver.get('http://kintergration.chinacloudapp.cn:9002/login.html')
         elif url == u'510':
-            driver.get('http://kintergration01.chinacloudapp.cn:9510/login.html')
+            driver.get('http://kintergration01.chinacloudapp.cn:9510/#/as/login')
         elif url == u'520':
-            driver.get('http://kintergration01.chinacloudapp.cn:9520/login.html')
+            driver.get('http://kintergration01.chinacloudapp.cn:9520/#/as/login')
         elif url == u'530':
             driver.get('http://kintergration01.chinacloudapp.cn:9530/#/as/login')
         elif url == u'540':
@@ -142,10 +142,10 @@ def visit_url(url,*arg):        #访问某个网址
         elif url == u'700':
             driver.get('http://kdevelop.chinacloudapp.cn:9003/login.html')
         elif url == u'810':
-            driver.get('http://pre-mongodb-01.chinacloudapp.cn:9003/login.html')
+            driver.get('http://pre-mongodb-01.chinacloudapp.cn:9003/#/as/login')
         elif url == u'800':
             # 线上
-            driver.get('http://cdwp.cnbmxinyun.com/login.html')
+            driver.get('http://cdwp.cnbmxinyun.com/#/as/login')
         else:
             driver.get(url)
     except Exception as e:
@@ -325,7 +325,7 @@ def sendkeys_to_elements(locationType,locatorExpression,inputContent):
     except Exception as e:
         if flag:
             # 找到元素，但后续失败时，可通过截图查看报错高亮元素
-            highlightElements(driver, locationType, locatorExpression)
+            highlightElements(locationType, locatorExpression)
         raise e
 
 def click_SpecObj(locationType, locatorExpression, *arg):       #点击页面元素
@@ -1109,7 +1109,9 @@ def ifExistThenReturnAttribute_pinyin(locationType,locatorExpression,attributeTy
         u'李浩': 'lihao01',
         u'曾蓉琴': 'zengrongqin',
         u'朴贤国': 'piaoxianguo',
-        u'王洋': 'wangyang01'
+        u'王洋': 'wangyang01',
+        u'张鑫': 'zhangxin01',
+        u'曾春娇': 'zengchunjiao'
     }
     try:
         driver.implicitly_wait(1)
@@ -1207,14 +1209,23 @@ def ifExistThenPass_xpath_combination(attributeType, locatorExpression, attribut
 
 def ifExistThenReturnOperateValue(locationType, locatorExpression, operateValue, *arg):
     # 若元素存在，则返回表格操作值
+    # 若元素不存在，则清空表格中的值
     global driver
+    from selenium.common.exceptions import TimeoutException
     try:
+        if operateValue is None:
+            return_operateValue = None
+        else:
+            return_num = operateValue.count("[]")
+            return_operateValue = "[]"*return_num
         driver.implicitly_wait(1)
         element = WebDriverWait(driver, 1).until(lambda x: x.find_element(by=locationType, value=locatorExpression))
         if element is not None:
             return operateValue
+    except TimeoutException as e:
+        return return_operateValue
     except Exception as e:
-        return ""
+        raise e
 
 # ****************************************JS相关****************************************
 
@@ -1307,7 +1318,7 @@ def checkStateOfContract(operateValue):
         op1 = operateValue.split("|")[2]
         op2 = operateValue.split("|")[3]
         if state == "是" \
-            and (contractType == "项目采购类型" or contractType == "第三方采购类型"):
+            and (contractType == "备货采购类型" or contractType == "样机采购类型" or contractType == "项目采购类型"):
             return op2
         else:
             return op1
@@ -1419,11 +1430,12 @@ def getNumWanted(locationType, locatorExpression, myNum):
         # 若没有找到指定元素，开始翻页操作
         try:
             elements = findElesbyMethod(driver,locationType,locatorExpression)
-            print("********** 共有 ",len(elements)," 个待遍历元素 **********")
+            print("********** 共有 ",int(elements[-1].text)-1," 个待遍历元素 **********")
             loopTime = 1
-            for i in elements:
-                highlight(driver,i)
-                i.click()
+            for i in range(int(elements[-1].text)-1):
+                highlightElement("xpath",'//*[contains(@class,"pagination")]/span[not(text()="共0条记录")]/../ul/li[last()][not(@class="disabled")]')
+                click_Obj("xpath",'//*[contains(@class,"pagination")]/span[not(text()="共0条记录")]/../ul/li[last()][not(@class="disabled")]')
+                loopTime += 1
                 loadPage()
 
                 try:
@@ -1431,8 +1443,7 @@ def getNumWanted(locationType, locatorExpression, myNum):
                     print("********** 已找到目标记录！ **********")
                     return
                 except TimeoutException as e:
-                    assert loopTime < len(elements), u"未找到目标元素！"
-                    loopTime += 1
+                    assert loopTime < int(elements[-1].text), u"未找到指定的单据号！"
                 except Exception as e:
                     raise e
         except Exception as e:
@@ -1500,13 +1511,14 @@ def getApprovalFlow(returnFlag=None):
         u'曾蓉琴': 'zengrongqin',
         u'朴贤国': 'piaoxianguo',
         u'王洋': 'wangyang01',
-        u'张鑫': 'zhangxin01'
+        u'张鑫': 'zhangxin01',
+        u'曾春娇': 'zengchunjiao'
     }
     trans = False
     try:
         waitVisibilityOfElementLocated("xpath", "//span[contains(text(), '审批状态')]")
     except Exception as e:
-        if returnFlag != "None":
+        if returnFlag is not None:
             raise e
         else:
             return
@@ -1720,7 +1732,7 @@ def saplogin(info):
     except:
         pass
 
-    # waitObj("name|wnd[0]|GuiMainWindow", "err", "SAP 轻松访问 中建信息")
+    waitObj("name|wnd[0]|GuiMainWindow", "err", "SAP 轻松访问 中建信息")
     print("********** SAP成功登陆！ **********")
 
 @SAPException
@@ -1740,7 +1752,7 @@ def closeSAP():
         if p.name() == 'saplogon.exe':
             cmd = 'taskkill /F /IM saplogon.exe'
             # 无需结束sap进程时，注释下行
-            # os.system(cmd)
+            os.system(cmd)
 
 @SAPException
 def createNewSession():
@@ -2065,65 +2077,3 @@ def chooseHowToTrans(var):
             break
     VR = "" if account == 2 else "zif001"
     return VR
-
-
-
-if __name__ == "__main__":
-    # pids = psutil.pids()
-    # for pid in pids:
-    #     p = psutil.Process(pid)
-    #     # print('pid-%s,pname-%s' % (pid, p.name()))
-    #     if p.name() == 'saplogon.exe':
-    #         cmd = 'taskkill /F /IM saplogon.exe'
-    #         # 无需结束sap进程时，注释下行
-    #         os.system(cmd)
-
-    # path = r"D:\SAP\SAPgui\saplogon.exe"
-    # env = "510"
-    # subprocess.Popen(path)
-    createObject("D:\SAP\SAPgui\saplogon.exe|510")
-    # time.sleep(1)
-    # SapGuiAuto = win32com.client.GetObject('SAPGUI')
-    # print("********** SAP成功启动！ **********")
-    # application = SapGuiAuto.GetScriptingEngine
-    # connection = application.OpenConnection(env, True)
-    # session = connection.Children(0)
-
-    userName = "qianxin"
-    passWord = "1234qwer"
-
-    session.findById("wnd[0]/usr/txtRSYST-BNAME").text = userName
-    session.findById("wnd[0]/usr/pwdRSYST-BCODE").text = passWord
-    session.findById("wnd[0]").sendVKey(0)
-    time.sleep(1)
-    session.ActiveWindow
-
-    session.findById("wnd[1]/tbar[0]/btn[0]").press()
-
-    session.findById("wnd[0]").maximize()
-    session.findById("wnd[0]/tbar[0]/okcd").text = "sicf"
-    session.findById("wnd[0]").sendVKey(0)
-    time.sleep(1)
-    session.ActiveWindow
-
-    session.findById("wnd[0]/tbar[1]/btn[8]").press()
-    time.sleep(1)
-    session.ActiveWindow
-    session.findById("wnd[0]/usr/cntlALV_TREE/shellcont/shell/shellcont[1]/shell[1]").expandNode("          1")
-    # session.findById("wnd[0]/usr/cntlALV_TREE/shellcont/shell/shellcont[1]/shell[1]").collapseNode "1"
-    # session.findById("wnd[0]/usr/cntlALV_TREE/shellcont/shell/shellcont[1]/shell[1]").selectItem("          1", "&Hierarchy")
-    session.findById("wnd[0]/usr/cntlALV_TREE/shellcont/shell/shellcont[1]/shell[1]").expandNode("          3")
-    session.findById("wnd[0]/usr/cntlALV_TREE/shellcont/shell/shellcont[1]/shell[1]").expandNode("          9")
-    session.findById("wnd[0]/usr/cntlALV_TREE/shellcont/shell/shellcont[1]/shell[1]").expandNode("         71")
-    session.findById("wnd[0]/usr/cntlALV_TREE/shellcont/shell/shellcont[1]/shell[1]").selectItem("         101", "&Hierarchy")
-    performObj("左击",id|wnd[0]/tbar[1]/btn[8])
-    session.findById("wnd[0]/tbar[1]/btn[8]").press()
-    session.findById("wnd[0]/tbar[1]/btn[25]").press()
-    session.findById("wnd[0]/usr/tabsTABSERVICE/tabpANMELDE").select()
-    session.findById("wnd[0]/usr/tabsTABSERVICE/tabpANMELDE/ssubSUBSERVICE:RSICFTREE:0700/txtIO_ICFOUT-ICF_MANDT").text = ""
-    session.findById("wnd[0]/usr/tabsTABSERVICE/tabpANMELDE/ssubSUBSERVICE:RSICFTREE:0700/txtIO_ICFOUT-ICF_USER").text = "WEBUSER"
-    session.findById("wnd[0]/usr/tabsTABSERVICE/tabpANMELDE/ssubSUBSERVICE:RSICFTREE:0700/pwdIO_PASSWD").text = "********"
-    session.findById("wnd[0]").sendVKey(0)
-    waitObj("MESSTXT1|GuiTextField")
-    session.findById("wnd[1]/tbar[0]/btn[0]").press()
-    session.findById("wnd[0]/tbar[0]/btn[11]").press()
