@@ -2065,3 +2065,65 @@ def chooseHowToTrans(var):
             break
     VR = "" if account == 2 else "zif001"
     return VR
+
+
+
+if __name__ == "__main__":
+    # pids = psutil.pids()
+    # for pid in pids:
+    #     p = psutil.Process(pid)
+    #     # print('pid-%s,pname-%s' % (pid, p.name()))
+    #     if p.name() == 'saplogon.exe':
+    #         cmd = 'taskkill /F /IM saplogon.exe'
+    #         # 无需结束sap进程时，注释下行
+    #         os.system(cmd)
+
+    # path = r"D:\SAP\SAPgui\saplogon.exe"
+    # env = "510"
+    # subprocess.Popen(path)
+    createObject("D:\SAP\SAPgui\saplogon.exe|510")
+    # time.sleep(1)
+    # SapGuiAuto = win32com.client.GetObject('SAPGUI')
+    # print("********** SAP成功启动！ **********")
+    # application = SapGuiAuto.GetScriptingEngine
+    # connection = application.OpenConnection(env, True)
+    # session = connection.Children(0)
+
+    userName = "qianxin"
+    passWord = "1234qwer"
+
+    session.findById("wnd[0]/usr/txtRSYST-BNAME").text = userName
+    session.findById("wnd[0]/usr/pwdRSYST-BCODE").text = passWord
+    session.findById("wnd[0]").sendVKey(0)
+    time.sleep(1)
+    session.ActiveWindow
+
+    session.findById("wnd[1]/tbar[0]/btn[0]").press()
+
+    session.findById("wnd[0]").maximize()
+    session.findById("wnd[0]/tbar[0]/okcd").text = "sicf"
+    session.findById("wnd[0]").sendVKey(0)
+    time.sleep(1)
+    session.ActiveWindow
+
+    session.findById("wnd[0]/tbar[1]/btn[8]").press()
+    time.sleep(1)
+    session.ActiveWindow
+    session.findById("wnd[0]/usr/cntlALV_TREE/shellcont/shell/shellcont[1]/shell[1]").expandNode("          1")
+    # session.findById("wnd[0]/usr/cntlALV_TREE/shellcont/shell/shellcont[1]/shell[1]").collapseNode "1"
+    # session.findById("wnd[0]/usr/cntlALV_TREE/shellcont/shell/shellcont[1]/shell[1]").selectItem("          1", "&Hierarchy")
+    session.findById("wnd[0]/usr/cntlALV_TREE/shellcont/shell/shellcont[1]/shell[1]").expandNode("          3")
+    session.findById("wnd[0]/usr/cntlALV_TREE/shellcont/shell/shellcont[1]/shell[1]").expandNode("          9")
+    session.findById("wnd[0]/usr/cntlALV_TREE/shellcont/shell/shellcont[1]/shell[1]").expandNode("         71")
+    session.findById("wnd[0]/usr/cntlALV_TREE/shellcont/shell/shellcont[1]/shell[1]").selectItem("         101", "&Hierarchy")
+    performObj("左击",id|wnd[0]/tbar[1]/btn[8])
+    session.findById("wnd[0]/tbar[1]/btn[8]").press()
+    session.findById("wnd[0]/tbar[1]/btn[25]").press()
+    session.findById("wnd[0]/usr/tabsTABSERVICE/tabpANMELDE").select()
+    session.findById("wnd[0]/usr/tabsTABSERVICE/tabpANMELDE/ssubSUBSERVICE:RSICFTREE:0700/txtIO_ICFOUT-ICF_MANDT").text = ""
+    session.findById("wnd[0]/usr/tabsTABSERVICE/tabpANMELDE/ssubSUBSERVICE:RSICFTREE:0700/txtIO_ICFOUT-ICF_USER").text = "WEBUSER"
+    session.findById("wnd[0]/usr/tabsTABSERVICE/tabpANMELDE/ssubSUBSERVICE:RSICFTREE:0700/pwdIO_PASSWD").text = "********"
+    session.findById("wnd[0]").sendVKey(0)
+    waitObj("MESSTXT1|GuiTextField")
+    session.findById("wnd[1]/tbar[0]/btn[0]").press()
+    session.findById("wnd[0]/tbar[0]/btn[11]").press()
